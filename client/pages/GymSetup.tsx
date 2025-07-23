@@ -10,11 +10,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Checkbox } from '@/components/ui/checkbox';
 import { Loader2, ArrowLeft, ArrowRight } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
-import { gymStorage } from '@/lib/storage';
+import { gymStorage, userStorage } from '@/lib/storage';
 import { Gym } from '@shared/types';
 
 export const GymSetup: React.FC = () => {
-  const { user } = useAuth();
+  const { user, refreshGyms } = useAuth();
   const { showToast } = useToast();
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(1);
@@ -94,13 +94,27 @@ export const GymSetup: React.FC = () => {
 
       // Save to localStorage
       gymStorage.add(newGym);
-      
+
+      // Update user's gym assignments to include the new gym
+      const currentUser = userStorage.get();
+      if (currentUser) {
+        currentUser.gymAssignments.push({
+          gymId: newGym.id,
+          role: 'owner',
+          permissions: ['all']
+        });
+        userStorage.set(currentUser);
+      }
+
+      // Refresh gyms in context
+      refreshGyms();
+
       showToast({
         type: 'success',
         title: 'Gym Created Successfully',
         message: `${gymName} has been set up and is ready to use!`
       });
-      
+
       // Redirect to gyms page
       navigate('/gyms');
       
