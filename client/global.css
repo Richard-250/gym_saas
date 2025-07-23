@@ -9,98 +9,110 @@
    * A different format will require also updating the theme in tailwind.config.ts.
   */
   :root {
-    --background: 210 15% 97%;
-    --foreground: 185 26% 9%;
+    --background: 183 97% 11%; /* #01363C */
+    --foreground: 0 0% 100%; /* white */
 
-    --card: 0 0% 100%;
-    --card-foreground: 185 26% 9%;
+    --card: 0 0% 100% / 0.1; /* white/10 */
+    --card-foreground: 0 0% 100%; /* white */
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 185 26% 9%;
+    --popover: 183 97% 11%;
+    --popover-foreground: 0 0% 100%;
 
-    --primary: 176 100% 37%;
-    --primary-foreground: 0 0% 100%;
+    --primary: 104 71% 66%; /* #85EC68 */
+    --primary-foreground: 183 97% 11%;
 
-    --secondary: 185 25% 91%;
-    --secondary-foreground: 185 26% 9%;
+    --secondary: 0 0% 100% / 0.1;
+    --secondary-foreground: 0 0% 100%;
 
-    --muted: 185 25% 91%;
-    --muted-foreground: 185 8% 45%;
+    --muted: 0 0% 100% / 0.1;
+    --muted-foreground: 0 0% 100% / 0.7;
 
-    --accent: 176 100% 37%;
-    --accent-foreground: 0 0% 100%;
+    --accent: 104 71% 66%;
+    --accent-foreground: 183 97% 11%;
 
     --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 185 25% 85%;
-    --input: 185 25% 85%;
-    --ring: 176 100% 37%;
+    --border: 0 0% 100% / 0.2; /* white/20 */
+    --input: 0 0% 100% / 0.1;
+    --ring: 104 71% 66%;
 
     --radius: 0.75rem;
 
-    --sidebar-background: 184 25% 24%;
+    --sidebar-background: 183 97% 11%;
     --sidebar-foreground: 0 0% 100%;
-    --sidebar-primary: 176 100% 37%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 184 25% 20%;
+    --sidebar-primary: 104 71% 66%;
+    --sidebar-primary-foreground: 183 97% 11%;
+    --sidebar-accent: 0 0% 100% / 0.1;
     --sidebar-accent-foreground: 0 0% 100%;
-    --sidebar-border: 184 25% 30%;
-    --sidebar-ring: 176 100% 37%;
+    --sidebar-border: 0 0% 100% / 0.2;
+    --sidebar-ring: 104 71% 66%;
 
     --success: 142 76% 36%;
     --success-foreground: 0 0% 100%;
 
     --warning: 48 96% 53%;
-    --warning-foreground: 0 0% 9%;
+    --warning-foreground: 183 97% 11%;
 
     --info: 200 98% 39%;
     --info-foreground: 0 0% 100%;
+
+    /* Status colors */
+    --status-pending: 45 93% 47%;
+    --status-pending-fg: 45 93% 8%;
+    --status-in-progress: 217 91% 60%;
+    --status-in-progress-fg: 217 91% 8%;
+    --status-awaiting: 271 81% 56%;
+    --status-awaiting-fg: 271 81% 8%;
+    --status-completed: 142 76% 36%;
+    --status-completed-fg: 142 76% 8%;
+    --status-ready: 173 58% 39%;
+    --status-ready-fg: 173 58% 8%;
   }
 
   .dark {
-    --background: 184 25% 12%;
-    --foreground: 0 0% 95%;
+    --background: 183 97% 11%;
+    --foreground: 0 0% 100%;
 
-    --card: 184 25% 16%;
-    --card-foreground: 0 0% 95%;
+    --card: 0 0% 100% / 0.1;
+    --card-foreground: 0 0% 100%;
 
-    --popover: 184 25% 16%;
-    --popover-foreground: 0 0% 95%;
+    --popover: 183 97% 11%;
+    --popover-foreground: 0 0% 100%;
 
-    --primary: 176 100% 45%;
-    --primary-foreground: 0 0% 9%;
+    --primary: 104 71% 66%;
+    --primary-foreground: 183 97% 11%;
 
-    --secondary: 184 25% 20%;
-    --secondary-foreground: 0 0% 95%;
+    --secondary: 0 0% 100% / 0.1;
+    --secondary-foreground: 0 0% 100%;
 
-    --muted: 184 25% 20%;
-    --muted-foreground: 0 0% 65%;
+    --muted: 0 0% 100% / 0.1;
+    --muted-foreground: 0 0% 100% / 0.7;
 
-    --accent: 176 100% 45%;
-    --accent-foreground: 0 0% 9%;
+    --accent: 104 71% 66%;
+    --accent-foreground: 183 97% 11%;
 
     --destructive: 0 62.8% 50%;
-    --destructive-foreground: 0 0% 98%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 184 25% 24%;
-    --input: 184 25% 24%;
-    --ring: 176 100% 45%;
+    --border: 0 0% 100% / 0.2;
+    --input: 0 0% 100% / 0.1;
+    --ring: 104 71% 66%;
 
-    --sidebar-background: 184 25% 8%;
-    --sidebar-foreground: 0 0% 95%;
-    --sidebar-primary: 176 100% 45%;
-    --sidebar-primary-foreground: 0 0% 9%;
-    --sidebar-accent: 184 25% 12%;
-    --sidebar-accent-foreground: 0 0% 95%;
-    --sidebar-border: 184 25% 16%;
-    --sidebar-ring: 176 100% 45%;
+    --sidebar-background: 183 97% 11%;
+    --sidebar-foreground: 0 0% 100%;
+    --sidebar-primary: 104 71% 66%;
+    --sidebar-primary-foreground: 183 97% 11%;
+    --sidebar-accent: 0 0% 100% / 0.1;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 0 0% 100% / 0.2;
+    --sidebar-ring: 104 71% 66%;
 
     --success: 142 76% 36%;
     --success-foreground: 0 0% 100%;
 
     --warning: 48 96% 53%;
-    --warning-foreground: 0 0% 9%;
+    --warning-foreground: 183 97% 11%;
 
     --info: 200 98% 39%;
     --info-foreground: 0 0% 100%;
