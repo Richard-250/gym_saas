@@ -9,6 +9,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { Login } from "./pages/Login";
 import { Gyms } from "./pages/Gyms";
+import { Dashboard } from "./pages/Dashboard";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import { Loader2 } from "lucide-react";
@@ -62,15 +63,10 @@ function AppRoutes() {
         </ProtectedRoute>
       } />
       
-      {/* Placeholder for other protected routes */}
+      {/* Dashboard Route */}
       <Route path="/dashboard" element={
         <ProtectedRoute>
-          <div className="min-h-screen flex items-center justify-center">
-            <div className="text-center">
-              <h1 className="text-2xl font-bold mb-4">Dashboard Coming Soon</h1>
-              <p className="text-muted-foreground">This page is under construction.</p>
-            </div>
-          </div>
+          <Dashboard />
         </ProtectedRoute>
       } />
       
