@@ -248,55 +248,55 @@ export const Dashboard: React.FC = () => {
 
             {/* Stats Cards */}
             <div className="grid grid-cols-1 lg:grid-cols-1 gap-4">
-              <Card className="bg-card">
+              <Card className="bg-white/10 border-white/20">
                 <CardContent className="p-4">
                   <div className="flex items-center space-x-2 mb-2">
                     <Users className="h-4 w-4 text-primary" />
-                    <span className="text-xs text-muted-foreground">Total Members</span>
+                    <span className="text-xs text-white/70">Total Members</span>
                   </div>
-                  <p className="text-2xl font-bold">{stats.totalMembers}</p>
+                  <p className="text-2xl font-bold text-white">{stats.totalMembers}</p>
                   <div className="flex items-center space-x-1 text-xs">
-                    <TrendingUp className="h-3 w-3 text-success" />
-                    <span className="text-success">+{stats.memberGrowth}% from last month</span>
+                    <TrendingUp className="h-3 w-3 text-primary" />
+                    <span className="text-primary">+{stats.memberGrowth}% from last month</span>
                   </div>
                 </CardContent>
               </Card>
               
-              <Card className="bg-card">
+              <Card className="bg-white/10 border-white/20">
                 <CardContent className="p-4">
                   <div className="flex items-center space-x-2 mb-2">
                     <DollarSign className="h-4 w-4 text-primary" />
-                    <span className="text-xs text-muted-foreground">Monthly Revenue</span>
+                    <span className="text-xs text-white/70">Monthly Revenue</span>
                   </div>
-                  <p className="text-2xl font-bold">${stats.monthlyRevenue.toLocaleString()}</p>
+                  <p className="text-2xl font-bold text-white">${stats.monthlyRevenue.toLocaleString()}</p>
                   <div className="flex items-center space-x-1 text-xs">
-                    <TrendingUp className="h-3 w-3 text-success" />
-                    <span className="text-success">+{stats.revenueGrowth}% from last month</span>
+                    <TrendingUp className="h-3 w-3 text-primary" />
+                    <span className="text-primary">+{stats.revenueGrowth}% from last month</span>
                   </div>
                 </CardContent>
               </Card>
               
-              <Card className="bg-card">
+              <Card className="bg-white/10 border-white/20">
                 <CardContent className="p-4">
                   <div className="flex items-center space-x-2 mb-2">
                     <Activity className="h-4 w-4 text-primary" />
-                    <span className="text-xs text-muted-foreground">Active Sessions</span>
+                    <span className="text-xs text-white/70">Active Sessions</span>
                   </div>
-                  <p className="text-2xl font-bold">{stats.activeSessions}</p>
+                  <p className="text-2xl font-bold text-white">{stats.activeSessions}</p>
                   <div className="flex items-center space-x-1 text-xs">
-                    <TrendingUp className="h-3 w-3 text-success" />
-                    <span className="text-success">+{stats.sessionGrowth}% from last month</span>
+                    <TrendingUp className="h-3 w-3 text-primary" />
+                    <span className="text-primary">+{stats.sessionGrowth}% from last month</span>
                   </div>
                 </CardContent>
               </Card>
               
-              <Card className="bg-card">
+              <Card className="bg-white/10 border-white/20">
                 <CardContent className="p-4">
                   <div className="flex items-center space-x-2 mb-2">
                     <Zap className="h-4 w-4 text-primary" />
-                    <span className="text-xs text-muted-foreground">Equipment Usage</span>
+                    <span className="text-xs text-white/70">Equipment Usage</span>
                   </div>
-                  <p className="text-2xl font-bold">{stats.equipmentUsage}%</p>
+                  <p className="text-2xl font-bold text-white">{stats.equipmentUsage}%</p>
                   <div className="flex items-center space-x-1 text-xs">
                     <TrendingDown className="h-3 w-3 text-destructive" />
                     <span className="text-destructive">{stats.usageGrowth}% from last month</span>
@@ -309,35 +309,51 @@ export const Dashboard: React.FC = () => {
           {/* Center Column */}
           <div className="lg:col-span-2 space-y-6">
             {/* Attendance Chart */}
-            <Card className="bg-card">
+            <Card className="bg-white/10 border-white/20">
               <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
+                <CardTitle className="flex items-center space-x-2 text-white">
                   <TrendingUp className="h-5 w-5" />
                   <span>Attendances</span>
-                  <Badge variant="secondary">Last 7 Days</Badge>
+                  <Badge variant="secondary" className="bg-white/20 text-white border-white/20">Last 7 Days</Badge>
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <ResponsiveContainer width="100%" height={200}>
                   <BarChart data={stats.attendanceData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="day" />
-                    <YAxis />
-                    <Bar dataKey="count" fill="hsl(var(--primary))" />
+                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" vertical={false} />
+                    <XAxis
+                      dataKey="day"
+                      axisLine={false}
+                      tickLine={false}
+                      tick={{ fill: 'rgba(255,255,255,0.7)', fontSize: 12 }}
+                    />
+                    <YAxis
+                      axisLine={false}
+                      tickLine={false}
+                      tick={{ fill: 'rgba(255,255,255,0.7)', fontSize: 12 }}
+                    />
+                    <Bar
+                      dataKey="count"
+                      fill="rgba(255,255,255,0.2)"
+                      radius={[4, 4, 0, 0]}
+                      onMouseEnter={(data, index) => {
+                        // Custom tooltip will be handled by recharts
+                      }}
+                    />
                   </BarChart>
                 </ResponsiveContainer>
               </CardContent>
             </Card>
 
             {/* Notifications */}
-            <Card className="bg-card">
+            <Card className="bg-white/10 border-white/20">
               <CardHeader>
                 <div className="flex items-center justify-between">
-                  <CardTitle className="flex items-center space-x-2">
+                  <CardTitle className="flex items-center space-x-2 text-white">
                     <Bell className="h-5 w-5" />
                     <span>Notifications</span>
                     {notifications.length > 0 && (
-                      <Badge variant="destructive">{notifications.length}</Badge>
+                      <div className="w-2 h-2 bg-red-500 rounded-full" />
                     )}
                   </CardTitle>
                   {notifications.length > 0 && (
@@ -353,18 +369,18 @@ export const Dashboard: React.FC = () => {
               </CardHeader>
               <CardContent>
                 {notifications.length === 0 ? (
-                  <p className="text-muted-foreground text-center py-4">No new notifications</p>
+                  <p className="text-white/70 text-center py-4">No new notifications</p>
                 ) : (
                   <div className="space-y-3">
                     {notifications.map((notification) => (
                       <div 
                         key={notification.id} 
-                        className="flex items-start space-x-3 p-3 bg-muted/30 rounded-lg"
+                        className="flex items-start space-x-3 p-3 bg-white/10 rounded-lg"
                       >
-                        <div className="w-2 h-2 bg-warning rounded-full mt-2" />
+                        <div className="w-2 h-2 bg-red-500 rounded-full mt-2" />
                         <div className="flex-1">
-                          <p className="text-sm font-medium">{notification.title}</p>
-                          <p className="text-xs text-muted-foreground mt-1">
+                          <p className="text-sm font-medium text-white">{notification.title}</p>
+                          <p className="text-xs text-white/70 mt-1">
                             {notification.message}
                           </p>
                         </div>
@@ -384,9 +400,9 @@ export const Dashboard: React.FC = () => {
             </Card>
 
             {/* My Bookings */}
-            <Card className="bg-card">
+            <Card className="bg-white/10 border-white/20">
               <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
+                <CardTitle className="flex items-center space-x-2 text-white">
                   <Calendar className="h-5 w-5" />
                   <span>My Bookings</span>
                 </CardTitle>
@@ -394,8 +410,8 @@ export const Dashboard: React.FC = () => {
               <CardContent>
                 <div className="space-y-4">
                   <div className="text-sm">
-                    <p className="font-medium">1:30PM</p>
-                    <p className="text-muted-foreground">JL 1/1</p>
+                    <p className="font-medium text-white">1:30PM</p>
+                    <p className="text-white/70">JL 1/1</p>
                   </div>
                   
                   <div>
