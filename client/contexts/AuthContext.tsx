@@ -10,6 +10,7 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<boolean>;
   logout: () => void;
   setCurrentGym: (gymId: string) => void;
+  refreshGyms: () => void;
   isLoading: boolean;
 }
 
@@ -138,6 +139,18 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
+  const refreshGyms = () => {
+    const storedGyms = gymStorage.getAll();
+    const user = userStorage.get();
+    if (user) {
+      const accessibleGyms = storedGyms.filter(gym =>
+        user.gymAssignments.some(assignment => assignment.gymId === gym.id) ||
+        gym.ownerId === user.id // Also include gyms owned by the user
+      );
+      setUserGyms(accessibleGyms);
+    }
+  };
+
   const value: AuthContextType = {
     user,
     currentGym,
@@ -145,6 +158,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     login,
     logout,
     setCurrentGym,
+    refreshGyms,
     isLoading,
   };
 
