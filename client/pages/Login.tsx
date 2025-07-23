@@ -58,6 +58,36 @@ export const Login: React.FC = () => {
     }
   };
 
+  const handleRegister = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    setError('');
+
+    try {
+      // Simulate registration process
+      await new Promise(resolve => setTimeout(resolve, 1500));
+
+      // For demo purposes, auto-login after registration
+      const success = await login(email, password);
+      if (success) {
+        showToast({
+          type: 'success',
+          title: 'Account Created Successfully',
+          message: `Welcome to GymSaaS! Your gym "${gymName}" has been created.`
+        });
+      }
+    } catch (err) {
+      setError('Registration failed. Please try again.');
+      showToast({
+        type: 'error',
+        title: 'Registration Failed',
+        message: 'Unable to create your account. Please try again.'
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-secondary">
