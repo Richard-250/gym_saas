@@ -69,6 +69,18 @@ export default {
           DEFAULT: "hsl(var(--info))",
           foreground: "hsl(var(--info-foreground))",
         },
+        status: {
+          pending: "hsl(var(--status-pending))",
+          "pending-foreground": "hsl(var(--status-pending-fg))",
+          "in-progress": "hsl(var(--status-in-progress))",
+          "in-progress-foreground": "hsl(var(--status-in-progress-fg))",
+          awaiting: "hsl(var(--status-awaiting))",
+          "awaiting-foreground": "hsl(var(--status-awaiting-fg))",
+          completed: "hsl(var(--status-completed))",
+          "completed-foreground": "hsl(var(--status-completed-fg))",
+          ready: "hsl(var(--status-ready))",
+          "ready-foreground": "hsl(var(--status-ready-fg))",
+        },
       },
       borderRadius: {
         lg: "var(--radius)",
