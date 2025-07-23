@@ -40,9 +40,9 @@ export const Gyms: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background to-secondary">
+    <div className="min-h-screen bg-background">
       {/* Header */}
-      <div className="border-b bg-card/50 backdrop-blur-sm">
+      <div className="border-b border-white/20 bg-white/5 backdrop-blur-sm">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
@@ -50,8 +50,8 @@ export const Gyms: React.FC = () => {
                 <Dumbbell className="h-6 w-6 text-primary-foreground" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold">GymSaaS</h1>
-                <p className="text-sm text-muted-foreground">Manage your fitness business</p>
+                <h1 className="text-2xl font-bold text-white">GymSaaS</h1>
+                <p className="text-sm text-white/70">Manage your fitness business</p>
               </div>
             </div>
             <div className="flex items-center space-x-4">
@@ -61,11 +61,11 @@ export const Gyms: React.FC = () => {
                   <AvatarFallback>{user?.name?.charAt(0)}</AvatarFallback>
                 </Avatar>
                 <div className="hidden sm:block">
-                  <p className="text-sm font-medium">{user?.name}</p>
-                  <p className="text-xs text-muted-foreground">{user?.email}</p>
+                  <p className="text-sm font-medium text-white">{user?.name}</p>
+                  <p className="text-xs text-white/70">{user?.email}</p>
                 </div>
               </div>
-              <Button variant="outline" size="sm" onClick={logout}>
+              <Button variant="outline" size="sm" onClick={logout} className="border-white/20 text-white hover:bg-white/10">
                 Sign Out
               </Button>
             </div>
@@ -76,8 +76,8 @@ export const Gyms: React.FC = () => {
       {/* Main Content */}
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8">
-          <h2 className="text-3xl font-bold mb-2">Your Gyms</h2>
-          <p className="text-muted-foreground">
+          <h2 className="text-3xl font-bold mb-2 text-white">Your Gyms</h2>
+          <p className="text-white/70">
             Select a gym to manage or create a new one
           </p>
         </div>
@@ -85,7 +85,7 @@ export const Gyms: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {/* Existing Gyms */}
           {userGyms.map((gym) => (
-            <Card key={gym.id} className="group hover:shadow-lg transition-all duration-200 cursor-pointer">
+            <Card key={gym.id} className="group hover:shadow-lg transition-all duration-200 cursor-pointer bg-white/10 border-white/20">
               <CardHeader className="pb-4">
                 <div className="flex items-center justify-between">
                   <Avatar className="h-12 w-12">
@@ -99,10 +99,10 @@ export const Gyms: React.FC = () => {
                   </Badge>
                 </div>
                 <div>
-                  <CardTitle className="group-hover:text-primary transition-colors">
+                  <CardTitle className="group-hover:text-primary transition-colors text-white">
                     {gym.name}
                   </CardTitle>
-                  <p className="text-sm text-muted-foreground mt-1">
+                  <p className="text-sm text-white/70 mt-1">
                     {gym.description}
                   </p>
                 </div>
@@ -121,32 +121,32 @@ export const Gyms: React.FC = () => {
                   
                   {/* Quick Stats */}
                   <div className="grid grid-cols-3 gap-2 text-center">
-                    <div className="bg-muted/50 p-2 rounded-lg">
-                      <Users className="h-4 w-4 mx-auto mb-1 text-muted-foreground" />
-                      <p className="text-xs font-medium">Members</p>
-                      <p className="text-sm text-muted-foreground">--</p>
+                    <div className="bg-white/10 p-2 rounded-lg">
+                      <Users className="h-4 w-4 mx-auto mb-1 text-white/70" />
+                      <p className="text-xs font-medium text-white">Members</p>
+                      <p className="text-sm text-white/70">--</p>
                     </div>
-                    <div className="bg-muted/50 p-2 rounded-lg">
-                      <DollarSign className="h-4 w-4 mx-auto mb-1 text-muted-foreground" />
-                      <p className="text-xs font-medium">Revenue</p>
-                      <p className="text-sm text-muted-foreground">--</p>
+                    <div className="bg-white/10 p-2 rounded-lg">
+                      <DollarSign className="h-4 w-4 mx-auto mb-1 text-white/70" />
+                      <p className="text-xs font-medium text-white">Revenue</p>
+                      <p className="text-sm text-white/70">--</p>
                     </div>
-                    <div className="bg-muted/50 p-2 rounded-lg">
-                      <Calendar className="h-4 w-4 mx-auto mb-1 text-muted-foreground" />
-                      <p className="text-xs font-medium">Sessions</p>
-                      <p className="text-sm text-muted-foreground">--</p>
+                    <div className="bg-white/10 p-2 rounded-lg">
+                      <Calendar className="h-4 w-4 mx-auto mb-1 text-white/70" />
+                      <p className="text-xs font-medium text-white">Sessions</p>
+                      <p className="text-sm text-white/70">--</p>
                     </div>
                   </div>
 
                   {/* Created Date */}
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-xs text-white/70">
                     Created {formatDistanceToNow(new Date(gym.createdAt), { addSuffix: true })}
                   </p>
 
                   {/* Actions */}
                   <div className="flex space-x-2 pt-2">
-                    <Button 
-                      className="flex-1" 
+                    <Button
+                      className="flex-1 bg-primary hover:bg-primary/80"
                       onClick={() => {
                         setCurrentGym(gym.id);
                       }}
@@ -156,7 +156,7 @@ export const Gyms: React.FC = () => {
                         Open Dashboard
                       </Link>
                     </Button>
-                    <Button variant="outline" size="icon">
+                    <Button variant="outline" size="icon" className="border-white/20 text-white hover:bg-white/10">
                       <Settings className="h-4 w-4" />
                     </Button>
                   </div>
@@ -166,16 +166,16 @@ export const Gyms: React.FC = () => {
           ))}
 
           {/* Create New Gym Card */}
-          <Card className="group hover:shadow-lg transition-all duration-200 cursor-pointer border-dashed border-2 hover:border-primary">
+          <Card className="group hover:shadow-lg transition-all duration-200 cursor-pointer border-dashed border-2 hover:border-primary bg-white/5 border-white/20">
             <CardContent className="flex flex-col items-center justify-center h-full py-12">
               <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
                 <Plus className="h-8 w-8 text-primary" />
               </div>
-              <h3 className="text-lg font-semibold mb-2">Create New Gym</h3>
-              <p className="text-sm text-muted-foreground text-center mb-4">
+              <h3 className="text-lg font-semibold mb-2 text-white">Create New Gym</h3>
+              <p className="text-sm text-white/70 text-center mb-4">
                 Set up a new gym and start managing your fitness business
               </p>
-              <Button asChild>
+              <Button asChild className="bg-primary hover:bg-primary/80">
                 <Link to="/setup">
                   Get Started
                 </Link>
@@ -190,12 +190,12 @@ export const Gyms: React.FC = () => {
             <div className="w-24 h-24 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6">
               <Dumbbell className="h-12 w-12 text-primary" />
             </div>
-            <h3 className="text-xl font-semibold mb-2">No gyms yet</h3>
-            <p className="text-muted-foreground mb-6 max-w-md mx-auto">
-              Get started by creating your first gym. You'll be able to manage members, 
+            <h3 className="text-xl font-semibold mb-2 text-white">No gyms yet</h3>
+            <p className="text-white/70 mb-6 max-w-md mx-auto">
+              Get started by creating your first gym. You'll be able to manage members,
               sessions, payments, and more.
             </p>
-            <Button size="lg" asChild>
+            <Button size="lg" asChild className="bg-primary hover:bg-primary/80">
               <Link to="/setup">
                 Create Your First Gym
               </Link>
