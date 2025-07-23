@@ -5,15 +5,15 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Progress } from '@/components/ui/progress';
-import { 
-  Dumbbell, 
-  Heart, 
-  Calendar, 
-  Bell, 
-  Settings, 
-  Users, 
-  DollarSign, 
-  Activity, 
+import {
+  Dumbbell,
+  Heart,
+  Calendar,
+  Bell,
+  Settings,
+  Users,
+  DollarSign,
+  Activity,
   Zap,
   TrendingUp,
   TrendingDown,
@@ -26,7 +26,9 @@ import {
   CreditCard,
   FileText,
   UserPlus,
-  LogIn
+  LogIn,
+  Menu,
+  Monitor
 } from 'lucide-react';
 import { generateSampleDashboardStats, generateSampleMembers, generateSampleTasks, generateSamplePayments, generateSampleNotifications } from '@/lib/sample-data';
 import { Link } from 'react-router-dom';
@@ -35,11 +37,23 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from 
 export const Dashboard: React.FC = () => {
   const { user, currentGym, logout, setCurrentGym, userGyms } = useAuth();
   const [notifications, setNotifications] = useState(generateSampleNotifications('user-1', currentGym?.id || 'gym-1'));
-  
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
   const stats = generateSampleDashboardStats();
   const members = generateSampleMembers(currentGym?.id || 'gym-1');
   const tasks = generateSampleTasks(currentGym?.id || 'gym-1');
   const payments = generateSamplePayments(currentGym?.id || 'gym-1');
+
+  const navigationItems = [
+    { icon: Calendar, label: 'Calendar', active: false },
+    { icon: Users, label: 'Members', active: true },
+    { icon: Activity, label: 'Activity', active: false },
+    { icon: DollarSign, label: 'Payments', active: false },
+    { icon: Dumbbell, label: 'Equipment', active: false },
+    { icon: FileText, label: 'Reports', active: false },
+    { icon: Bell, label: 'Notifications', active: false },
+    { icon: Settings, label: 'Settings', active: false },
+  ];
 
   const dismissNotification = (notificationId: string) => {
     setNotifications(prev => prev.filter(n => n.id !== notificationId));
@@ -64,53 +78,75 @@ export const Dashboard: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-sidebar">
+    <div className="min-h-screen bg-background">
+      {/* Mobile Menu Button */}
+      <div className="lg:hidden fixed top-4 left-4 z-50">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          className="text-foreground hover:bg-white/10"
+        >
+          <Menu className="h-6 w-6" />
+        </Button>
+      </div>
+
       {/* Sidebar */}
-      <div className="fixed left-0 top-0 h-full w-16 bg-sidebar border-r border-sidebar-border flex flex-col items-center py-4 space-y-6">
+      <div className={`fixed left-0 top-0 h-full bg-sidebar border-r border-sidebar-border flex flex-col py-4 transition-all duration-300 z-40 ${
+        isMobileMenuOpen ? 'w-64' : 'w-64 lg:w-64 -translate-x-full lg:translate-x-0'
+      }`}>
         {/* Logo */}
-        <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
-          <Heart className="h-6 w-6 text-primary-foreground" />
+        <div className="flex items-center space-x-3 px-4 mb-8">
+          <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
+            <Heart className="h-6 w-6 text-primary-foreground" />
+          </div>
+          <span className="text-lg font-bold text-sidebar-foreground">GymSaaS</span>
         </div>
-        
-        {/* Navigation Icons */}
-        <div className="flex flex-col space-y-4">
-          <Button variant="ghost" size="icon" className="w-10 h-10 text-sidebar-foreground hover:bg-sidebar-accent">
-            <Calendar className="h-5 w-5" />
-          </Button>
-          <Button variant="ghost" size="icon" className="w-10 h-10 text-sidebar-foreground hover:bg-sidebar-accent">
-            <Users className="h-5 w-5" />
-          </Button>
-          <Button variant="ghost" size="icon" className="w-10 h-10 text-sidebar-foreground hover:bg-sidebar-accent">
-            <Activity className="h-5 w-5" />
-          </Button>
-          <Button variant="ghost" size="icon" className="w-10 h-10 text-sidebar-foreground hover:bg-sidebar-accent">
-            <DollarSign className="h-5 w-5" />
-          </Button>
-          <Button variant="ghost" size="icon" className="w-10 h-10 text-sidebar-foreground hover:bg-sidebar-accent">
-            <Dumbbell className="h-5 w-5" />
-          </Button>
-          <Button variant="ghost" size="icon" className="w-10 h-10 text-sidebar-foreground hover:bg-sidebar-accent">
-            <FileText className="h-5 w-5" />
-          </Button>
-          <Button variant="ghost" size="icon" className="w-10 h-10 text-sidebar-foreground hover:bg-sidebar-accent">
-            <Bell className="h-5 w-5" />
-          </Button>
-          <Button variant="ghost" size="icon" className="w-10 h-10 text-sidebar-foreground hover:bg-sidebar-accent">
-            <Settings className="h-5 w-5" />
-          </Button>
+
+        {/* Navigation Items */}
+        <div className="flex flex-col space-y-2 px-3 flex-1">
+          {navigationItems.map((item, index) => {
+            const Icon = item.icon;
+            return (
+              <Button
+                key={index}
+                variant="ghost"
+                className={`w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent h-12 px-3 ${
+                  item.active ? 'bg-sidebar-accent' : ''
+                }`}
+              >
+                <Icon className="h-5 w-5 mr-3" />
+                <span className="text-sm">{item.label}</span>
+              </Button>
+            );
+          })}
         </div>
-        
+
         {/* User Avatar */}
-        <div className="mt-auto">
-          <Avatar className="h-10 w-10">
-            <AvatarImage src={user?.avatar} alt={user?.name} />
-            <AvatarFallback>{user?.name?.charAt(0)}</AvatarFallback>
-          </Avatar>
+        <div className="px-4 mt-auto">
+          <div className="flex items-center space-x-3 p-2 rounded-lg hover:bg-sidebar-accent cursor-pointer">
+            <Avatar className="h-10 w-10">
+              <AvatarImage src={user?.avatar} alt={user?.name} />
+              <AvatarFallback className="bg-primary text-primary-foreground">{user?.name?.charAt(0)}</AvatarFallback>
+            </Avatar>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-sidebar-foreground truncate">{user?.name}</p>
+              <p className="text-xs text-sidebar-foreground/70 truncate">{user?.email}</p>
+            </div>
+          </div>
         </div>
       </div>
 
+      {/* Overlay for mobile */}
+      {isMobileMenuOpen && (
+        <div
+          className="lg:hidden fixed inset-0 bg-black/50 z-30"
+          onClick={() => setIsMobileMenuOpen(false)}
+        />
+      )}
+
       {/* Main Content */}
-      <div className="ml-16 p-6 text-sidebar-foreground">
+      <div className="lg:ml-64 p-6 text-foreground">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div>
@@ -152,66 +188,66 @@ export const Dashboard: React.FC = () => {
           {/* Left Column */}
           <div className="lg:col-span-1 space-y-6">
             {/* Circular Progress Stats */}
-            <div className="grid grid-cols-2 gap-4">
-              <Card className="bg-card">
+            <div className="grid grid-cols-1 lg:grid-cols-1 gap-4">
+              <Card className="bg-white/10 border-white/20">
                 <CardContent className="p-4">
                   <div className="flex flex-col items-center">
                     <div className="relative w-16 h-16 mb-2">
-                      <Progress value={66.7} className="h-2" />
+                      <Progress value={66.7} className="h-2 bg-white/20" />
                       <div className="absolute inset-0 flex items-center justify-center">
-                        <span className="text-lg font-bold">66.7%</span>
+                        <span className="text-lg font-bold text-white">66.7%</span>
                       </div>
                     </div>
-                    <p className="text-xs text-center text-muted-foreground">Scheduled</p>
+                    <p className="text-xs text-center text-white/70">Scheduled</p>
                   </div>
                 </CardContent>
               </Card>
               
-              <Card className="bg-card">
+              <Card className="bg-white/10 border-white/20">
                 <CardContent className="p-4">
                   <div className="flex flex-col items-center">
                     <div className="relative w-16 h-16 mb-2">
-                      <Progress value={88.2} className="h-2" />
+                      <Progress value={88.2} className="h-2 bg-white/20" />
                       <div className="absolute inset-0 flex items-center justify-center">
-                        <span className="text-lg font-bold">88.2%</span>
+                        <span className="text-lg font-bold text-white">88.2%</span>
                       </div>
                     </div>
-                    <p className="text-xs text-center text-muted-foreground">Paid</p>
+                    <p className="text-xs text-center text-white/70">Paid</p>
                   </div>
                 </CardContent>
               </Card>
               
-              <Card className="bg-card">
+              <Card className="bg-white/10 border-white/20">
                 <CardContent className="p-4">
                   <div className="flex flex-col items-center">
                     <div className="relative w-16 h-16 mb-2">
-                      <Progress value={75.0} className="h-2" />
+                      <Progress value={75.0} className="h-2 bg-white/20" />
                       <div className="absolute inset-0 flex items-center justify-center">
-                        <span className="text-lg font-bold">75.0%</span>
+                        <span className="text-lg font-bold text-white">75.0%</span>
                       </div>
                     </div>
-                    <p className="text-xs text-center text-muted-foreground">Overdue</p>
+                    <p className="text-xs text-center text-white/70">Overdue</p>
                   </div>
                 </CardContent>
               </Card>
               
-              <Card className="bg-card">
+              <Card className="bg-white/10 border-white/20">
                 <CardContent className="p-4">
                   <div className="flex flex-col items-center">
                     <div className="relative w-16 h-16 mb-2">
-                      <Progress value={35.0} className="h-2" />
+                      <Progress value={35.0} className="h-2 bg-white/20" />
                       <div className="absolute inset-0 flex items-center justify-center">
-                        <span className="text-lg font-bold">35.0%</span>
+                        <span className="text-lg font-bold text-white">35.0%</span>
                       </div>
                     </div>
-                    <p className="text-xs text-center text-muted-foreground">Attendance</p>
+                    <p className="text-xs text-center text-white/70">Attendance</p>
                   </div>
                 </CardContent>
               </Card>
             </div>
 
             {/* Stats Cards */}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 lg:grid-cols-1 gap-4">
               <Card className="bg-card">
                 <CardContent className="p-4">
                   <div className="flex items-center space-x-2 mb-2">
