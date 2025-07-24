@@ -49,7 +49,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Toolti
 
 export const Dashboard: React.FC = () => {
   const { user, currentGym, logout, setCurrentGym, userGyms } = useAuth();
-  const [notifications, setNotifications] = useState([]);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showWhatsNew, setShowWhatsNew] = useState(false);
   const [showChatbot, setShowChatbot] = useState(false);
