@@ -41,7 +41,8 @@ import {
   User,
   Building2
 } from 'lucide-react';
-import { generateSampleDashboardStats, generateSampleMembers, generateSampleTasks, generateSamplePayments, generateSampleNotifications } from '@/lib/sample-data';
+import { generateSampleDashboardStats } from '@/lib/sample-data';
+import { gymMemberStorage, gymTaskStorage, gymPaymentStorage, gymNotificationStorage, initializeGymData } from '@/lib/gym-storage';
 import { Link } from 'react-router-dom';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Tooltip } from 'recharts';
 
@@ -63,9 +64,26 @@ export const Dashboard: React.FC = () => {
   }, [showAccountMenu]);
 
   const stats = generateSampleDashboardStats();
-  const members = generateSampleMembers(currentGym?.id || 'gym-1');
-  const tasks = generateSampleTasks(currentGym?.id || 'gym-1');
-  const payments = generateSamplePayments(currentGym?.id || 'gym-1');
+
+  // Initialize gym data if it doesn't exist
+  useEffect(() => {
+    if (currentGym) {
+      initializeGymData(currentGym.id);
+    }
+  }, [currentGym]);
+
+  // Get gym-specific data
+  const members = currentGym ? gymMemberStorage.getAll(currentGym.id) : [];
+  const tasks = currentGym ? gymTaskStorage.getAll(currentGym.id) : [];
+  const payments = currentGym ? gymPaymentStorage.getAll(currentGym.id) : [];
+
+  // Initialize notifications from gym-specific storage
+  useEffect(() => {
+    if (currentGym) {
+      const gymNotifications = gymNotificationStorage.getAll(currentGym.id);
+      setNotifications(gymNotifications);
+    }
+  }, [currentGym]);
 
   const navigationItems = [
     { icon: BarChart3, label: 'Dashboard', active: true },
