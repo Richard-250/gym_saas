@@ -53,6 +53,15 @@ export const Dashboard: React.FC = () => {
   const [showChatbot, setShowChatbot] = useState(false);
   const [showAccountMenu, setShowAccountMenu] = useState(false);
 
+  // Close account menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = () => setShowAccountMenu(false);
+    if (showAccountMenu) {
+      document.addEventListener('click', handleClickOutside);
+      return () => document.removeEventListener('click', handleClickOutside);
+    }
+  }, [showAccountMenu]);
+
   const stats = generateSampleDashboardStats();
   const members = generateSampleMembers(currentGym?.id || 'gym-1');
   const tasks = generateSampleTasks(currentGym?.id || 'gym-1');
@@ -134,6 +143,23 @@ export const Dashboard: React.FC = () => {
         <div className={`flex flex-col space-y-1 px-2 flex-1 ${isMobileMenuOpen ? 'overflow-y-auto' : ''}`}>
           {navigationItems.map((item, index) => {
             const Icon = item.icon;
+
+            if (item.label === 'Members') {
+              return (
+                <Link to="/members" key={index} className="w-full">
+                  <Button
+                    variant="ghost"
+                    className={`w-full flex flex-col items-center justify-center text-sidebar-foreground hover:bg-sidebar-accent h-16 px-1 group ${
+                      item.active ? 'bg-sidebar-accent' : ''
+                    } ${isMobileMenuOpen ? 'h-12 flex-row justify-start px-3' : ''}`}
+                  >
+                    <Icon className={`h-5 w-5 ${isMobileMenuOpen ? 'mr-3 text-yellow-400' : 'mb-1'} ${!isMobileMenuOpen && item.active ? 'text-primary' : ''}`} />
+                    <span className={`text-xs ${isMobileMenuOpen ? 'text-sm text-yellow-400' : 'text-sidebar-foreground/80'} group-hover:text-sidebar-foreground`}>{item.label}</span>
+                  </Button>
+                </Link>
+              );
+            }
+
             return (
               <Button
                 key={index}
