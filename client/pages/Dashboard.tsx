@@ -100,11 +100,17 @@ export const Dashboard: React.FC = () => {
   ];
 
   const dismissNotification = (notificationId: string) => {
-    setNotifications(prev => prev.filter(n => n.id !== notificationId));
+    if (currentGym) {
+      gymNotificationStorage.markAsRead(currentGym.id, notificationId);
+      setNotifications(prev => prev.filter(n => n.id !== notificationId));
+    }
   };
 
   const dismissAllNotifications = () => {
-    setNotifications([]);
+    if (currentGym && user) {
+      gymNotificationStorage.markAllAsRead(currentGym.id, user.id);
+      setNotifications([]);
+    }
   };
 
   // Custom tooltip for chart
