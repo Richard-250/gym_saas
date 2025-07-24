@@ -43,6 +43,7 @@ import {
 } from 'lucide-react';
 import { generateSampleDashboardStats } from '@/lib/sample-data';
 import { gymMemberStorage, gymTaskStorage, gymPaymentStorage, gymNotificationStorage, initializeGymData } from '@/lib/gym-storage';
+import { Notification } from '@shared/types';
 import { Link } from 'react-router-dom';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Tooltip } from 'recharts';
 
