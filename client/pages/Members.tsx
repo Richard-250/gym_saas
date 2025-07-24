@@ -35,7 +35,8 @@ import {
   Eye
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
-import { gymStorage, memberStorage } from '@/lib/storage';
+import { gymStorage } from '@/lib/storage';
+import { gymMemberStorage, initializeGymData } from '@/lib/gym-storage';
 import { Member } from '@shared/types';
 
 interface MemberWithCheckIn extends Member {
@@ -68,43 +69,24 @@ export const Members: React.FC = () => {
   const [membershipFilter, setMembershipFilter] = useState<string>('all');
   const [dateRangeFilter, setDateRangeFilter] = useState<string>('all');
 
-  // Generate sample members data
+  // Load gym-specific members data
   useEffect(() => {
     if (currentGym) {
-      const sampleMembers: MemberWithCheckIn[] = [
-        {
-          id: 'member-1',
-          gymId: currentGym.id,
-          name: 'alexandre mugabo',
-          email: 'alexandre@example.com',
-          phone: '000000000000000000',
-          avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face',
-          membershipType: 'No Active Membership',
-          startDate: new Date('2023-01-15').toISOString(),
-          status: 'active',
-          lastCheckin: new Date('2024-01-14').toISOString(),
-          checkinCode: '2410',
-          age: 26,
-          billingStatus: 'paid'
-        },
-        {
-          id: 'member-2',
-          gymId: currentGym.id,
-          name: 'CYUBAHIRO Richard',
-          email: 'cyubahiro@example.com',
-          phone: '(079) 252-5910',
-          avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face',
-          membershipType: 'Monthly recurring - Unlimited',
-          startDate: new Date('2023-02-10').toISOString(),
-          status: 'active',
-          lastCheckin: new Date('2024-01-13').toISOString(),
-          checkinCode: '2222',
-          age: 25,
-          billingStatus: 'overdue'
-        }
-      ];
-      
-      setMembers(sampleMembers);
+      // Initialize gym data if needed
+      initializeGymData(currentGym.id);
+
+      // Get members from gym-specific storage
+      const gymMembers = gymMemberStorage.getAll(currentGym.id);
+
+      // Convert to MemberWithCheckIn format with additional data
+      const membersWithCheckIn: MemberWithCheckIn[] = gymMembers.map((member, index) => ({
+        ...member,
+        checkinCode: `${2000 + index}${member.id.slice(-2)}`,
+        age: Math.floor(Math.random() * 30) + 20, // Random age between 20-50
+        billingStatus: ['paid', 'overdue', 'pending'][Math.floor(Math.random() * 3)] as 'paid' | 'overdue' | 'pending'
+      }));
+
+      setMembers(membersWithCheckIn);
     }
   }, [currentGym]);
 
@@ -679,6 +661,32 @@ export const Members: React.FC = () => {
           memberId={showEditMember}
           onClose={() => setShowEditMember(null)}
           onSave={(memberData) => {
+            if (showEditMember === 'new' && currentGym) {
+              // Add new member to gym-specific storage
+              const newMember: Member = {
+                id: `member-${currentGym.id}-${Date.now()}`,
+                gymId: currentGym.id,
+                name: `${memberData.firstName} ${memberData.lastName}`,
+                email: memberData.email,
+                phone: memberData.phone,
+                membershipType: memberData.membershipType,
+                startDate: new Date().toISOString(),
+                status: 'active'
+              };
+
+              gymMemberStorage.add(currentGym.id, newMember);
+
+              // Refresh members list
+              const updatedMembers = gymMemberStorage.getAll(currentGym.id);
+              const membersWithCheckIn: MemberWithCheckIn[] = updatedMembers.map((member, index) => ({
+                ...member,
+                checkinCode: `${2000 + index}${member.id.slice(-2)}`,
+                age: Math.floor(Math.random() * 30) + 20,
+                billingStatus: ['paid', 'overdue', 'pending'][Math.floor(Math.random() * 3)] as 'paid' | 'overdue' | 'pending'
+              }));
+              setMembers(membersWithCheckIn);
+            }
+
             showToast({
               type: 'success',
               title: showEditMember === 'new' ? 'Member Added' : 'Member Updated',
