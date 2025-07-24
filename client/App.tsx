@@ -12,6 +12,8 @@ import { Login } from "./pages/Login";
 import { Gyms } from "./pages/Gyms";
 import { Dashboard } from "./pages/Dashboard";
 import { GymSetup } from "./pages/GymSetup";
+import { Members } from "./pages/Members";
+import { MemberPortal } from "./pages/MemberPortal";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import { Loader2 } from "lucide-react";
@@ -77,6 +79,14 @@ function AppRoutes() {
           <GymSetup />
         </ProtectedRoute>
       } />
+
+      <Route path="/members" element={
+        <ProtectedRoute>
+          <Members />
+        </ProtectedRoute>
+      } />
+
+      <Route path="/member-portal" element={<MemberPortal />} />
       
       {/* Default redirect */}
       <Route path="/" element={<Navigate to="/gyms" replace />} />
