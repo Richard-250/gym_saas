@@ -51,6 +51,7 @@ export const Dashboard: React.FC = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showWhatsNew, setShowWhatsNew] = useState(false);
   const [showChatbot, setShowChatbot] = useState(false);
+  const [showAccountMenu, setShowAccountMenu] = useState(false);
 
   const stats = generateSampleDashboardStats();
   const members = generateSampleMembers(currentGym?.id || 'gym-1');
@@ -67,7 +68,6 @@ export const Dashboard: React.FC = () => {
     { icon: Dumbbell, label: 'Gym', active: false },
     { icon: Settings, label: 'Settings', active: false },
     { icon: Building2, label: 'Front Desk', active: false },
-    { icon: User, label: 'Account', active: false },
     { icon: HelpCircle, label: 'Help', active: false },
   ];
 
@@ -131,13 +131,13 @@ export const Dashboard: React.FC = () => {
         </div>
         
         {/* Navigation Items */}
-        <div className="flex flex-col space-y-1 px-2 flex-1">
+        <div className={`flex flex-col space-y-1 px-2 flex-1 ${isMobileMenuOpen ? 'overflow-y-auto' : ''}`}>
           {navigationItems.map((item, index) => {
             const Icon = item.icon;
             return (
-              <Button 
+              <Button
                 key={index}
-                variant="ghost" 
+                variant="ghost"
                 className={`w-full flex flex-col items-center justify-center text-sidebar-foreground hover:bg-sidebar-accent h-16 px-1 group ${
                   item.active ? 'bg-sidebar-accent' : ''
                 } ${isMobileMenuOpen ? 'h-12 flex-row justify-start px-3' : ''}`}
@@ -149,15 +149,18 @@ export const Dashboard: React.FC = () => {
           })}
         </div>
         
-        {/* User Avatar */}
-        <div className="px-2 mt-auto">
-          <div className="flex items-center justify-center p-2 rounded-lg hover:bg-sidebar-accent cursor-pointer">
-            <Avatar className="h-10 w-10">
-              <AvatarImage src={user?.avatar} alt={user?.name} />
-              <AvatarFallback className="bg-primary text-primary-foreground">{user?.name?.charAt(0)}</AvatarFallback>
-            </Avatar>
+        {/* Account Button - only show on mobile menu */}
+        {isMobileMenuOpen && (
+          <div className="px-2 mt-auto">
+            <Button
+              variant="ghost"
+              className="w-full h-12 flex-row justify-start px-3 text-sidebar-foreground hover:bg-sidebar-accent"
+            >
+              <User className="h-5 w-5 mr-3 text-yellow-400" />
+              <span className="text-sm text-yellow-400">Account</span>
+            </Button>
           </div>
-        </div>
+        )}
       </div>
 
       {/* Overlay for mobile */}
@@ -196,10 +199,36 @@ export const Dashboard: React.FC = () => {
             <p className="text-sm text-white/70">payments this month</p>
           </div>
           <div className="flex items-center space-x-4">
-            <Button variant="outline" className="border-white/20 text-white hover:bg-white/10" asChild>
-              <Link to="/gyms">Switch Gym</Link>
-            </Button>
-            <Button variant="outline" className="border-white/20 text-white hover:bg-white/10" onClick={logout}>Sign Out</Button>
+            {/* Account dropdown - moved to top right */}
+            <div className="relative">
+              <Button
+                variant="ghost"
+                className="flex items-center space-x-2 text-white hover:bg-white/10 p-2"
+                onClick={() => setShowAccountMenu(!showAccountMenu)}
+              >
+                <Avatar className="h-8 w-8">
+                  <AvatarImage src={user?.avatar} alt={user?.name} />
+                  <AvatarFallback className="bg-primary text-primary-foreground">{user?.name?.charAt(0)}</AvatarFallback>
+                </Avatar>
+                <span className="text-sm hidden sm:block">{user?.name}</span>
+              </Button>
+
+              {showAccountMenu && (
+                <div className="absolute top-full right-0 mt-2 w-48 bg-background border border-white/20 rounded-lg shadow-lg z-50">
+                  <div className="p-2 space-y-1">
+                    <Button variant="ghost" className="w-full justify-start text-white hover:bg-white/10" asChild>
+                      <Link to="/gyms">Switch Gym</Link>
+                    </Button>
+                    <Button variant="ghost" className="w-full justify-start text-white hover:bg-white/10">
+                      Account Settings
+                    </Button>
+                    <Button variant="ghost" className="w-full justify-start text-white hover:bg-white/10" onClick={logout}>
+                      Sign Out
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
