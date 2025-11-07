@@ -237,8 +237,10 @@ export const Login: React.FC = () => {
 
         <div className="mt-6 text-center">
           <p className="text-sm text-white/70">
-            Demo credentials: Any email and password will work
+            Demo credentials:
           </p>
+          <p className="text-xs text-white/60 mt-2">Admin: <span className="font-medium">admin@gymsaas.test</span> / <span className="font-medium">admin123</span></p>
+          <p className="text-xs text-white/60">Owner: <span className="font-medium">john.doe@example.com</span> / <span className="font-medium">password</span></p>
         </div>
       </div>
     </div>
