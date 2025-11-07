@@ -21,10 +21,10 @@ export const generateSampleGyms = (): Gym[] => [
     logo: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=200&h=200&fit=crop',
     ownerId: 'user-1',
     settings: {
-      timezone: 'UTC',
-      currency: 'USD',
-      address: '123 Fitness St, City, State 12345',
-      phone: '+1 (555) 123-4567',
+      timezone: 'Africa/Kigali',
+      currency: 'RWF',
+      address: '123 Fitness St, Kigali, Rwanda',
+      phone: '+250 788 000 000',
       email: 'contact@avancia.fitness',
       openingHours: {
         monday: { open: '06:00', close: '22:00' },
