@@ -134,7 +134,12 @@ function AppRoutes() {
       } />
 
       <Route path="/member-portal" element={<MemberPortal />} />
-      
+      <Route path="/gyms/:gymId/staff" element={
+        <ProtectedRoute>
+          <Staff />
+        </ProtectedRoute>
+      } />
+
       {/* Default redirect */}
       <Route path="/" element={<Navigate to="/gyms" replace />} />
       
