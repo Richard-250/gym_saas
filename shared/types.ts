@@ -14,6 +14,8 @@ export interface GymAssignment {
   gymId: string;
   role: UserRole;
   permissions: string[];
+  // paid indicates whether the user has an active paid relationship with this gym
+  paid?: boolean;
 }
 
 export interface Gym {
