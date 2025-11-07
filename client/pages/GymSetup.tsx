@@ -191,14 +191,38 @@ export const GymSetup: React.FC = () => {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="address" className="text-white">Address</Label>
+                <Label htmlFor="addressLine" className="text-white">Address Line</Label>
                 <Input
-                  id="address"
-                  placeholder="Gym address"
-                  value={address}
-                  onChange={(e) => setAddress(e.target.value)}
+                  id="addressLine"
+                  placeholder="Street address / PO Box"
+                  value={addressLine}
+                  onChange={(e) => setAddressLine(e.target.value)}
                   className="bg-white/10 border-white/20 text-white placeholder:text-white/50"
                 />
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <div className="space-y-2">
+                  <Label htmlFor="sector" className="text-white">Sector</Label>
+                  <Input id="sector" placeholder="Sector" value={sector} onChange={(e) => setSector(e.target.value)} className="bg-white/10 border-white/20 text-white placeholder:text-white/50" />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="cell" className="text-white">Cell</Label>
+                  <Input id="cell" placeholder="Cell" value={cell} onChange={(e) => setCell(e.target.value)} className="bg-white/10 border-white/20 text-white placeholder:text-white/50" />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <div className="space-y-2">
+                  <Label htmlFor="district" className="text-white">District</Label>
+                  <Input id="district" placeholder="District" value={district} onChange={(e) => setDistrict(e.target.value)} className="bg-white/10 border-white/20 text-white placeholder:text-white/50" />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="province" className="text-white">Province</Label>
+                  <Input id="province" placeholder="Province" value={province} onChange={(e) => setProvince(e.target.value)} className="bg-white/10 border-white/20 text-white placeholder:text-white/50" />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="country" className="text-white">Country</Label>
+                <Input id="country" placeholder="Country" value={country} onChange={(e) => setCountry(e.target.value)} className="bg-white/10 border-white/20 text-white placeholder:text-white/50" />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="phone" className="text-white">Phone Number</Label>
