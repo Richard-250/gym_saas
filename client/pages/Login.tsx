@@ -22,6 +22,11 @@ export const Login: React.FC = () => {
 
   // Redirect if already logged in
   if (user && !isLoading) {
+    // Trainers and members go to member portal
+    if (user.role === 'trainer' || user.role === 'member') {
+      return <Navigate to="/member-portal" replace />;
+    }
+    // Admin sees gyms list; owners/managers see gyms dashboard
     return <Navigate to="/gyms" replace />;
   }
 
