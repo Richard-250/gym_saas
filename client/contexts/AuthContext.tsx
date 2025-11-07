@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { User, Gym } from '@shared/types';
-import { userStorage, gymStorage, currentGymStorage } from '@/lib/storage';
+import { userStorage, gymStorage, currentGymStorage, usersStorage } from '@/lib/storage';
 import { generateSampleUser, generateSampleGyms } from '@/lib/sample-data';
 
 interface AuthContextType {
