@@ -256,6 +256,10 @@ export const Staff: FC = () => {
 
             <div className="mt-4 grid grid-cols-2 gap-4">
               <div>
+                <Label className="text-white">Password</Label>
+                <Input value={passwordField} onChange={e => setPasswordField(e.target.value)} placeholder="Set temporary password" className="bg-white/5" />
+              </div>
+              <div>
                 <Label className="text-white">Payroll Type</Label>
                 <Select onValueChange={(v) => setPayrollType(v as any)}>
                   <SelectTrigger className="w-full bg-white/5">
