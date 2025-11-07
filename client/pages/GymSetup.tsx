@@ -23,11 +23,16 @@ export const GymSetup: React.FC = () => {
   // Form data
   const [gymName, setGymName] = useState('');
   const [description, setDescription] = useState('');
-  const [address, setAddress] = useState('');
+  const [addressLine, setAddressLine] = useState('');
+  const [country, setCountry] = useState('Rwanda');
+  const [province, setProvince] = useState('');
+  const [district, setDistrict] = useState('');
+  const [sector, setSector] = useState('');
+  const [cell, setCell] = useState('');
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
-  const [timezone, setTimezone] = useState('UTC');
-  const [currency, setCurrency] = useState('USD');
+  const [timezone, setTimezone] = useState('Africa/Kigali');
+  const [currency, setCurrency] = useState('RWF');
   const [features, setFeatures] = useState<string[]>([]);
 
   const availableFeatures = [
