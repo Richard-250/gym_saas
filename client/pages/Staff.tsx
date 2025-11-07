@@ -112,7 +112,7 @@ export const Staff: FC = () => {
     }
 
     // Reset form
-    setName(''); setEmail(''); setPhone(''); setPermissions([]); setRole('manager'); setPayrollRate(''); setPayrollType('monthly');
+    setName(''); setEmail(''); setPhone(''); setPermissions([]); setRole('manager'); setPayrollRate(''); setPayrollType('monthly'); setPasswordField(''); setStatusActive(true);
     refreshList();
   };
 
