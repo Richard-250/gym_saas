@@ -331,26 +331,51 @@ export const Staff: FC = () => {
 
                         <div className="flex items-center space-x-2">
                           {editingUserId === su.user.id ? (
-                            <div className="flex items-center space-x-2">
-                              <Button variant="outline" onClick={() => {
-                                // save
-                                const users = usersStorage.getAll();
-                                const idx = users.findIndex(u => u.user.id === editingUserId);
-                                if (idx === -1) return;
-                                // update user object
-                                const updatedUser = { ...users[idx].user, name: editForm.name, email: editForm.email };
-                                // update assignment for this gym
-                                updatedUser.gymAssignments = updatedUser.gymAssignments.map((a: any) => a.gymId === gymId ? { ...a, role: editForm.role, permissions: editForm.permissions, payrollInfo: { type: editForm.payrollType, rate: editForm.payrollRate }, active: editForm.active } : a);
-                                users[idx].user = updatedUser;
-                                // update password if provided
-                                if (editForm.password) users[idx].password = editForm.password;
-                                usersStorage.setAll(users);
-                                setEditingUserId(null);
-                                setEditForm(null);
-                                showToast({ type: 'success', title: 'Updated', message: 'Staff updated successfully' });
-                                refreshList();
-                              }}>Save</Button>
-                              <Button variant="ghost" onClick={() => { setEditingUserId(null); setEditForm(null); }}>Cancel</Button>
+                            <div className="w-full">
+                              <div className="grid grid-cols-2 gap-2 mb-2">
+                                <Input value={editForm.name} onChange={(e) => setEditForm({ ...editForm, name: e.target.value })} className="bg-white/5" />
+                                <Input value={editForm.email} onChange={(e) => setEditForm({ ...editForm, email: e.target.value })} className="bg-white/5" />
+                                <Input placeholder="New password" value={editForm.password} onChange={(e) => setEditForm({ ...editForm, password: e.target.value })} className="bg-white/5" />
+                                <div>
+                                  <select value={editForm.role} onChange={(e) => setEditForm({ ...editForm, role: e.target.value })} className="w-full bg-white/5 p-2 rounded">
+                                    <option value="manager">Manager</option>
+                                    <option value="trainer">Trainer</option>
+                                    <option value="front-desk">Front-Desk</option>
+                                  </select>
+                                </div>
+                              </div>
+                              <div className="flex items-center space-x-2 mb-2">
+                                <label className="flex items-center space-x-2 text-white"><input type="checkbox" checked={editForm.active} onChange={(e) => setEditForm({ ...editForm, active: e.target.checked })} /> <span>Active</span></label>
+                                <div className="ml-4">Payroll:</div>
+                                <select value={editForm.payrollType} onChange={(e) => setEditForm({ ...editForm, payrollType: e.target.value })} className="bg-white/5 p-2 rounded">
+                                  <option value="hourly">Hourly</option>
+                                  <option value="weekly">Weekly</option>
+                                  <option value="monthly">Monthly</option>
+                                  <option value="per_session">Per Session</option>
+                                </select>
+                                <Input value={editForm.payrollRate as any} onChange={(e) => setEditForm({ ...editForm, payrollRate: e.target.value === '' ? '' : Number(e.target.value) })} placeholder="Rate" className="w-24 bg-white/5" />
+                              </div>
+                              <div className="flex items-center space-x-2">
+                                <Button variant="outline" onClick={() => {
+                                  // save
+                                  const users = usersStorage.getAll();
+                                  const idx = users.findIndex(u => u.user.id === editingUserId);
+                                  if (idx === -1) return;
+                                  // update user object
+                                  const updatedUser = { ...users[idx].user, name: editForm.name, email: editForm.email };
+                                  // update assignment for this gym
+                                  updatedUser.gymAssignments = updatedUser.gymAssignments.map((a: any) => a.gymId === gymId ? { ...a, role: editForm.role, permissions: editForm.permissions, payrollInfo: { type: editForm.payrollType, rate: editForm.payrollRate }, active: editForm.active } : a);
+                                  users[idx].user = updatedUser;
+                                  // update password if provided
+                                  if (editForm.password) users[idx].password = editForm.password;
+                                  usersStorage.setAll(users);
+                                  setEditingUserId(null);
+                                  setEditForm(null);
+                                  showToast({ type: 'success', title: 'Updated', message: 'Staff updated successfully' });
+                                  refreshList();
+                                }}>Save</Button>
+                                <Button variant="ghost" onClick={() => { setEditingUserId(null); setEditForm(null); }}>Cancel</Button>
+                              </div>
                             </div>
                           ) : (
                             <div className="flex items-center space-x-2">
