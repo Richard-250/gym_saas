@@ -63,6 +63,8 @@ export const GymSetup: React.FC = () => {
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 2000));
       
+      const fullAddress = [addressLine, sector, cell, district, province, country].filter(Boolean).join(', ');
+
       const newGym: Gym = {
         id: `gym-${Date.now()}`,
         name: gymName,
@@ -71,7 +73,15 @@ export const GymSetup: React.FC = () => {
         settings: {
           timezone,
           currency,
-          address,
+          address: fullAddress,
+          location: {
+            country,
+            province,
+            district,
+            sector,
+            cell,
+            addressLine
+          },
           phone,
           email,
           openingHours: {
@@ -87,9 +97,8 @@ export const GymSetup: React.FC = () => {
         },
         subscription: {
           id: `sub-${Date.now()}`,
-          planType: 'trial',
+          planType: 'basic',
           status: 'active',
-          trialEndsAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
           currentPeriodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
           daysLeft: 30
         },
