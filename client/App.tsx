@@ -1,18 +1,28 @@
 import "./global.css";
 
-// Filter out the specific Recharts defaultProps warnings early
+// Filter out the specific Recharts defaultProps warnings early (both warn and error)
 const _origWarn = console.warn.bind(console);
+const _origError = console.error.bind(console);
+const _filterText = 'Support for defaultProps will be removed from function components';
+
 console.warn = (...args: any[]) => {
   try {
     const msg = args[0] && (typeof args[0] === 'string' ? args[0] : JSON.stringify(args[0]));
-    if (msg && msg.includes('Support for defaultProps will be removed from function components')) {
-      // optionally further restrict to XAxis/YAxis keywords
-      if (/(XAxis|YAxis|Bar)/.test(msg)) return;
-    }
+    if (msg && msg.includes(_filterText) && /(XAxis|YAxis|Bar)/.test(msg)) return;
   } catch (e) {
     // ignore
   }
   return _origWarn(...args);
+};
+
+console.error = (...args: any[]) => {
+  try {
+    const msg = args[0] && (typeof args[0] === 'string' ? args[0] : JSON.stringify(args[0]));
+    if (msg && msg.includes(_filterText) && /(XAxis|YAxis|Bar)/.test(msg)) return;
+  } catch (e) {
+    // ignore
+  }
+  return _origError(...args);
 };
 
 // Additionally attempt to delete defaultProps on the recharts exports if available
