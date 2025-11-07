@@ -99,14 +99,13 @@ export const Gyms: React.FC = () => {
               <CardContent>
                 <div className="space-y-3">
                   {/* Subscription Info */}
-                  {gym.subscription.planType === 'trial' && (
-                    <div className="flex items-center space-x-2 text-sm">
-                      <Clock className="h-4 w-4 text-warning" />
-                      <span className="text-warning font-medium">
-                        {gym.subscription.daysLeft} days left in trial
-                      </span>
-                    </div>
-                  )}
+                  {/* Subscription Info */}
+                  <div className="flex items-center space-x-2 text-sm">
+                    <Clock className="h-4 w-4 text-white/70" />
+                    <span className="font-medium text-white/70">
+                      {statusLabel(gym.subscription)}
+                    </span>
+                  </div>
                   
                   {/* Quick Stats */}
                   <div className="grid grid-cols-3 gap-2 text-center">
