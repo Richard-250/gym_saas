@@ -185,17 +185,36 @@ export const Dashboard: React.FC = () => {
               );
             }
 
+            // Determine route for this item
+            const getPath = () => {
+              const label = item.label.toLowerCase();
+              if (label === 'dashboard') return '/dashboard';
+              if (label === 'members') return '/members';
+              if (label === 'gym') return currentGym ? `/gyms/${currentGym.id}/staff` : '/gyms';
+              if (label === 'billing') return currentGym ? `/gyms/${currentGym.id}/billing` : '/gyms';
+              if (label === 'marketing') return currentGym ? `/gyms/${currentGym.id}/marketing` : '/gyms';
+              if (label === 'website') return currentGym ? `/gyms/${currentGym.id}/website` : '/gyms';
+              if (label === 'sales') return currentGym ? `/gyms/${currentGym.id}/sales` : '/gyms';
+              if (label === 'settings') return currentGym ? `/gyms/${currentGym.id}/settings` : '/gyms';
+              if (label === 'front desk') return currentGym ? `/gyms/${currentGym.id}/front-desk` : '/gyms';
+              if (label === 'help') return '/help';
+              return '/gyms';
+            };
+
+            const path = getPath();
+
             return (
-              <Button
-                key={index}
-                variant="ghost"
-                className={`w-full flex flex-col items-center justify-center text-sidebar-foreground hover:bg-sidebar-accent h-16 px-1 group ${
-                  item.active ? 'bg-sidebar-accent' : ''
-                } ${isMobileMenuOpen ? 'h-12 flex-row justify-start px-3' : ''}`}
-              >
-                <Icon className={`h-5 w-5 ${isMobileMenuOpen ? 'mr-3 text-yellow-400' : 'mb-1'} ${!isMobileMenuOpen && item.active ? 'text-primary' : ''}`} />
-                <span className={`text-xs ${isMobileMenuOpen ? 'text-sm text-yellow-400' : 'text-sidebar-foreground/80'} group-hover:text-sidebar-foreground`}>{item.label}</span>
-              </Button>
+              <Link to={path} key={index} className="w-full">
+                <Button
+                  variant="ghost"
+                  className={`w-full flex flex-col items-center justify-center text-sidebar-foreground hover:bg-sidebar-accent h-16 px-1 group ${
+                    item.active ? 'bg-sidebar-accent' : ''
+                  } ${isMobileMenuOpen ? 'h-12 flex-row justify-start px-3' : ''}`}
+                >
+                  <Icon className={`h-5 w-5 ${isMobileMenuOpen ? 'mr-3 text-yellow-400' : 'mb-1'} ${!isMobileMenuOpen && item.active ? 'text-primary' : ''}`} />
+                  <span className={`text-xs ${isMobileMenuOpen ? 'text-sm text-yellow-400' : 'text-sidebar-foreground/80'} group-hover:text-sidebar-foreground`}>{item.label}</span>
+                </Button>
+              </Link>
             );
           })}
         </div>
