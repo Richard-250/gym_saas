@@ -86,11 +86,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         usersStorage.setAll([admin, owner]);
       }
 
-      // If storedUser not set (previous behavior), keep null until login
+      // Compute accessible gyms for storedUser if present
+      let accessibleGyms: Gym[] = [];
       if (storedUser) {
         setUser(storedUser);
 
-        const accessibleGyms = storedGyms.filter(gym =>
+        accessibleGyms = storedGyms.filter(gym =>
           storedUser!.gymAssignments.some(assignment => assignment.gymId === gym.id)
         );
         setUserGyms(accessibleGyms);
