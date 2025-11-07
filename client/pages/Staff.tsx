@@ -39,6 +39,11 @@ export const Staff: FC = () => {
   const [sendInvite, setSendInvite] = useState(true);
   const [payrollType, setPayrollType] = useState<'hourly'|'weekly'|'monthly'|'per_session'>('monthly');
   const [payrollRate, setPayrollRate] = useState<number | ''>('');
+  const [passwordField, setPasswordField] = useState('');
+  const [statusActive, setStatusActive] = useState(true);
+
+  const [editingUserId, setEditingUserId] = useState<string | null>(null);
+  const [editForm, setEditForm] = useState<any>(null);
 
   useEffect(() => {
     if (!gymId) return;
