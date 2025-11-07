@@ -39,9 +39,8 @@ export const generateSampleGyms = (): Gym[] => [
     },
     subscription: {
       id: 'sub-1',
-      planType: 'trial',
+      planType: 'basic',
       status: 'active',
-      trialEndsAt: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000).toISOString(),
       currentPeriodEnd: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000).toISOString(),
       daysLeft: 15
     },
