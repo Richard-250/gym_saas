@@ -2,6 +2,7 @@ import { User, Gym, Member, Session, Payment, Task, Notification } from '@shared
 
 const STORAGE_KEYS = {
   USER: 'gym_saas_user',
+  USERS: 'gym_saas_users',
   GYMS: 'gym_saas_gyms',
   MEMBERS: 'gym_saas_members',
   SESSIONS: 'gym_saas_sessions',
@@ -38,11 +39,39 @@ const removeStorageItem = (key: string): void => {
   }
 };
 
-// User storage
+// User storage (current logged in user)
 export const userStorage = {
   get: (): User | null => getStorageItem<User>(STORAGE_KEYS.USER),
   set: (user: User): void => setStorageItem(STORAGE_KEYS.USER, user),
   remove: (): void => removeStorageItem(STORAGE_KEYS.USER),
+};
+
+// Users list storage (all registered accounts)
+type StoredUser = { user: User; password?: string };
+export const usersStorage = {
+  getAll: (): StoredUser[] => getStorageItem<StoredUser[]>(STORAGE_KEYS.USERS) || [],
+  setAll: (users: StoredUser[]): void => setStorageItem(STORAGE_KEYS.USERS, users),
+  findByEmail: (email: string): StoredUser | null => {
+    const users = usersStorage.getAll();
+    return users.find(u => u.user.email.toLowerCase() === email.toLowerCase()) || null;
+  },
+  add: (user: User, password?: string): void => {
+    const users = usersStorage.getAll();
+    users.push({ user, password });
+    usersStorage.setAll(users);
+  },
+  updateUser: (userId: string, updates: Partial<User>): void => {
+    const users = usersStorage.getAll();
+    const index = users.findIndex(u => u.user.id === userId);
+    if (index !== -1) {
+      users[index].user = { ...users[index].user, ...updates } as User;
+      usersStorage.setAll(users);
+    }
+  },
+  remove: (userId: string): void => {
+    const users = usersStorage.getAll().filter(u => u.user.id !== userId);
+    usersStorage.setAll(users);
+  },
 };
 
 // Gym storage
@@ -58,7 +87,7 @@ export const gymStorage = {
     const gyms = gymStorage.getAll();
     const index = gyms.findIndex(g => g.id === gymId);
     if (index !== -1) {
-      gyms[index] = { ...gyms[index], ...updates };
+      gyms[index] = { ...gyms[index], ...updates } as Gym;
       gymStorage.set(gyms);
     }
   },
@@ -96,7 +125,7 @@ export const memberStorage = {
     const members = memberStorage.getAll();
     const index = members.findIndex(m => m.id === memberId);
     if (index !== -1) {
-      members[index] = { ...members[index], ...updates };
+      members[index] = { ...members[index], ...updates } as Member;
       memberStorage.set(members);
     }
   },
@@ -123,7 +152,7 @@ export const sessionStorage = {
     const sessions = sessionStorage.getAll();
     const index = sessions.findIndex(s => s.id === sessionId);
     if (index !== -1) {
-      sessions[index] = { ...sessions[index], ...updates };
+      sessions[index] = { ...sessions[index], ...updates } as Session;
       sessionStorage.set(sessions);
     }
   },
@@ -150,7 +179,7 @@ export const paymentStorage = {
     const payments = paymentStorage.getAll();
     const index = payments.findIndex(p => p.id === paymentId);
     if (index !== -1) {
-      payments[index] = { ...payments[index], ...updates };
+      payments[index] = { ...payments[index], ...updates } as Payment;
       paymentStorage.set(payments);
     }
   },
@@ -173,7 +202,7 @@ export const taskStorage = {
     const tasks = taskStorage.getAll();
     const index = tasks.findIndex(t => t.id === taskId);
     if (index !== -1) {
-      tasks[index] = { ...tasks[index], ...updates };
+      tasks[index] = { ...tasks[index], ...updates } as Task;
       taskStorage.set(tasks);
     }
   },
@@ -206,7 +235,7 @@ export const notificationStorage = {
   },
   markAllAsRead: (userId: string): void => {
     const notifications = notificationStorage.getAll();
-    const updated = notifications.map(n => 
+    const updated = notifications.map(n =>
       n.userId === userId ? { ...n, read: true } : n
     );
     notificationStorage.set(updated);
