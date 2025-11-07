@@ -8,6 +8,7 @@ interface AuthContextType {
   currentGym: Gym | null;
   userGyms: Gym[];
   login: (email: string, password: string) => Promise<boolean>;
+  register: (name: string, email: string, password: string) => Promise<{ success: boolean; message?: string }>;
   logout: () => void;
   setCurrentGym: (gymId: string) => void;
   refreshGyms: () => void;
