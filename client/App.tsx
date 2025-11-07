@@ -1,14 +1,28 @@
 import "./global.css";
 
-// Try to remove defaultProps from Recharts components that trigger React warnings
-// This mutates the third-party module at runtime to avoid the deprecation warning
+// Filter out the specific Recharts defaultProps warnings early
+const _origWarn = console.warn.bind(console);
+console.warn = (...args: any[]) => {
+  try {
+    const msg = args[0] && (typeof args[0] === 'string' ? args[0] : JSON.stringify(args[0]));
+    if (msg && msg.includes('Support for defaultProps will be removed from function components')) {
+      // optionally further restrict to XAxis/YAxis keywords
+      if (/(XAxis|YAxis|Bar)/.test(msg)) return;
+    }
+  } catch (e) {
+    // ignore
+  }
+  return _origWarn(...args);
+};
+
+// Additionally attempt to delete defaultProps on the recharts exports if available
 try {
   // eslint-disable-next-line @typescript-eslint/no-var-requires
   const Recharts = require('recharts');
   if (Recharts) {
-    try { delete Recharts.XAxis?.defaultProps; } catch (e) {}
-    try { delete Recharts.YAxis?.defaultProps; } catch (e) {}
-    try { delete Recharts.Bar?.defaultProps; } catch (e) {}
+    try { delete (Recharts as any).XAxis?.defaultProps; } catch (e) {}
+    try { delete (Recharts as any).YAxis?.defaultProps; } catch (e) {}
+    try { delete (Recharts as any).Bar?.defaultProps; } catch (e) {}
   }
 } catch (e) {
   // ignore if recharts not available or require fails
