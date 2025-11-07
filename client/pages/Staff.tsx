@@ -180,15 +180,64 @@ export const Staff: FC = () => {
 
           <Link to="/members" className="w-full">
             <Button variant="ghost" className="w-full flex flex-col items-center justify-center text-sidebar-foreground h-16 px-1 group">
-              <Calendar className="h-5 w-5 mb-1" />
+              <Users className="h-5 w-5 mb-1" />
               <span className="text-xs text-sidebar-foreground/80">Members</span>
             </Button>
           </Link>
 
-          <Link to={gym ? `/gyms/${gym.id}/staff` : '/gyms'} className="w-full">
+          <Link to={gym ? `/gyms/${gym.id}/billing` : '/gyms'} className="w-full">
+            <Button variant="ghost" className="w-full flex flex-col items-center justify-center text-sidebar-foreground h-16 px-1 group">
+              <DollarSign className="h-5 w-5 mb-1" />
+              <span className="text-xs text-sidebar-foreground/80">Billing</span>
+            </Button>
+          </Link>
+
+          <Link to={gym ? `/gyms/${gym.id}/marketing` : '/gyms'} className="w-full">
+            <Button variant="ghost" className="w-full flex flex-col items-center justify-center text-sidebar-foreground h-16 px-1 group">
+              <Calendar className="h-5 w-5 mb-1" />
+              <span className="text-xs text-sidebar-foreground/80">Marketing</span>
+            </Button>
+          </Link>
+
+          <Link to={gym ? `/gyms/${gym.id}/website` : '/gyms'} className="w-full">
+            <Button variant="ghost" className="w-full flex flex-col items-center justify-center text-sidebar-foreground h-16 px-1 group">
+              <Calendar className="h-5 w-5 mb-1" />
+              <span className="text-xs text-sidebar-foreground/80">Website</span>
+            </Button>
+          </Link>
+
+          <Link to={gym ? `/gyms/${gym.id}/sales` : '/gyms'} className="w-full">
+            <Button variant="ghost" className="w-full flex flex-col items-center justify-center text-sidebar-foreground h-16 px-1 group">
+              <Calendar className="h-5 w-5 mb-1" />
+              <span className="text-xs text-sidebar-foreground/80">Sales</span>
+            </Button>
+          </Link>
+
+          <Link to={gym ? `/gyms/${gym.id}/gym` : '/gyms'} className="w-full">
+            <Button variant="ghost" className="w-full flex flex-col items-center justify-center text-sidebar-foreground h-16 px-1 group">
+              <Users className="h-5 w-5 mb-1" />
+              <span className="text-xs text-sidebar-foreground/80">Gym</span>
+            </Button>
+          </Link>
+
+          <Link to={gym ? `/gyms/${gym.id}/settings` : '/gyms'} className="w-full">
             <Button variant="ghost" className="w-full flex flex-col items-center justify-center text-sidebar-foreground h-16 px-1 group">
               <Settings className="h-5 w-5 mb-1" />
-              <span className="text-xs text-sidebar-foreground/80">Gym</span>
+              <span className="text-xs text-sidebar-foreground/80">Settings</span>
+            </Button>
+          </Link>
+
+          <Link to={gym ? `/gyms/${gym.id}/front-desk` : '/gyms'} className="w-full">
+            <Button variant="ghost" className="w-full flex flex-col items-center justify-center text-sidebar-foreground h-16 px-1 group">
+              <Calendar className="h-5 w-5 mb-1" />
+              <span className="text-xs text-sidebar-foreground/80">Front Desk</span>
+            </Button>
+          </Link>
+
+          <Link to="/help" className="w-full">
+            <Button variant="ghost" className="w-full flex flex-col items-center justify-center text-sidebar-foreground h-16 px-1 group">
+              <Calendar className="h-5 w-5 mb-1" />
+              <span className="text-xs text-sidebar-foreground/80">Help</span>
             </Button>
           </Link>
         </div>
