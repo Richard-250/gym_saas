@@ -1,5 +1,30 @@
 import "./global.css";
 
+// Silence noisy Recharts warnings about defaultProps on function components
+// These warnings come from a third-party library (recharts) and are safe for now.
+// We filter only the specific message to avoid hiding other useful warnings.
+const _origWarn = console.warn.bind(console);
+const _origError = console.error.bind(console);
+const _filterRegex = /Support for defaultProps will be removed from function components/;
+console.warn = (...args: any[]) => {
+  try {
+    const msg = args[0] && (typeof args[0] === 'string' ? args[0] : JSON.stringify(args[0]));
+    if (msg && _filterRegex.test(msg) && /(XAxis|YAxis)/.test(msg)) return;
+  } catch (e) {
+    // ignore
+  }
+  return _origWarn(...args);
+};
+console.error = (...args: any[]) => {
+  try {
+    const msg = args[0] && (typeof args[0] === 'string' ? args[0] : JSON.stringify(args[0]));
+    if (msg && _filterRegex.test(msg) && /(XAxis|YAxis)/.test(msg)) return;
+  } catch (e) {
+    // ignore
+  }
+  return _origError(...args);
+};
+
 import { Toaster } from "@/components/ui/toaster";
 import { createRoot } from "react-dom/client";
 import { Toaster as Sonner } from "@/components/ui/sonner";
