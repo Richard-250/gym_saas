@@ -96,39 +96,94 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const login = async (email: string, password: string): Promise<boolean> => {
     setIsLoading(true);
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // For demo purposes, accept any email/password
-      let storedUser = userStorage.get();
-      if (!storedUser) {
-        storedUser = generateSampleUser();
-        userStorage.set(storedUser);
-      }
+      await new Promise(resolve => setTimeout(resolve, 600));
 
-      setUser(storedUser);
-      
-      // Load gyms
+      // Ensure gyms list exists
       let storedGyms = gymStorage.getAll();
       if (storedGyms.length === 0) {
         storedGyms = generateSampleGyms();
         gymStorage.set(storedGyms);
       }
 
-      const accessibleGyms = storedGyms.filter(gym => 
-        storedUser!.gymAssignments.some(assignment => assignment.gymId === gym.id)
-      );
-      setUserGyms(accessibleGyms);
+      // Find user from usersStorage
+      const stored = usersStorage.findByEmail(email);
+      if (!stored) {
+        return false;
+      }
 
-      if (accessibleGyms.length > 0) {
-        setCurrentGymState(accessibleGyms[0]);
-        currentGymStorage.set(accessibleGyms[0].id);
+      // Password check (demo only)
+      if (stored.password && stored.password !== password) {
+        return false;
+      }
+
+      // Set current user
+      userStorage.set(stored.user);
+      setUser(stored.user);
+
+      // Admin role: can access all gyms
+      if ((stored.user as any).role === 'admin') {
+        setUserGyms(storedGyms);
+        if (storedGyms.length > 0) {
+          setCurrentGymState(storedGyms[0]);
+          currentGymStorage.set(storedGyms[0].id);
+        }
+      } else {
+        const accessibleGyms = storedGyms.filter(gym =>
+          stored.user.gymAssignments.some(assignment => assignment.gymId === gym.id) ||
+          gym.ownerId === stored.user.id
+        );
+        setUserGyms(accessibleGyms);
+        if (accessibleGyms.length > 0) {
+          setCurrentGymState(accessibleGyms[0]);
+          currentGymStorage.set(accessibleGyms[0].id);
+        }
       }
 
       return true;
     } catch (error) {
       console.error('Login error:', error);
       return false;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Register new owner account (no gym created here)
+  const register = async (name: string, email: string, password: string): Promise<{ success: boolean; message?: string }> => {
+    setIsLoading(true);
+    try {
+      await new Promise(resolve => setTimeout(resolve, 600));
+
+      // Check if email already registered
+      const existing = usersStorage.findByEmail(email);
+      if (existing) {
+        return { success: false, message: 'A user with that email already exists.' };
+      }
+
+      const id = `user-${Date.now()}`;
+      const newUser: User = {
+        id,
+        name,
+        email,
+        role: 'owner',
+        avatar: undefined,
+        createdAt: new Date().toISOString(),
+        gymAssignments: []
+      };
+
+      // Save to usersStorage with password
+      usersStorage.add(newUser, password);
+
+      // Set as current logged in user
+      userStorage.set(newUser);
+      setUser(newUser);
+      setUserGyms([]);
+      setCurrentGymState(null);
+
+      return { success: true };
+    } catch (error) {
+      console.error('Register error:', error);
+      return { success: false, message: 'Registration failed' };
     } finally {
       setIsLoading(false);
     }
