@@ -60,6 +60,7 @@ import { Dashboard } from "./pages/Dashboard";
 import { GymSetup } from "./pages/GymSetup";
 import { Members } from "./pages/Members";
 import { MemberPortal } from "./pages/MemberPortal";
+import Staff from "./pages/Staff";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import { Loader2 } from "lucide-react";
