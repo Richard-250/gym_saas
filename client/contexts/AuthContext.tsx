@@ -55,22 +55,49 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       let storedUser = userStorage.get();
       let storedGyms = gymStorage.getAll();
 
-      // If no data exists, create sample data
-      if (!storedUser || storedGyms.length === 0) {
-        storedUser = generateSampleUser();
+      // Ensure gyms exist
+      if (storedGyms.length === 0) {
         storedGyms = generateSampleGyms();
-        
-        userStorage.set(storedUser);
         gymStorage.set(storedGyms);
       }
 
-      setUser(storedUser);
-      
-      // Filter gyms based on user's assignments
-      const accessibleGyms = storedGyms.filter(gym => 
-        storedUser!.gymAssignments.some(assignment => assignment.gymId === gym.id)
-      );
-      setUserGyms(accessibleGyms);
+      // Ensure users list exists and includes an admin and a default owner
+      const allUsers = usersStorage.getAll();
+      if (allUsers.length === 0) {
+        // create admin
+        const admin = {
+          user: {
+            id: 'admin-1',
+            email: 'admin@gymsaas.test',
+            name: 'System Admin',
+            role: 'admin' as any,
+            avatar: undefined,
+            createdAt: new Date().toISOString(),
+            gymAssignments: []
+          },
+          password: 'admin123'
+        };
+
+        const owner = {
+          user: generateSampleUser(),
+          password: 'password'
+        };
+
+        usersStorage.setAll([admin, owner]);
+      }
+
+      // If storedUser not set (previous behavior), keep null until login
+      if (storedUser) {
+        setUser(storedUser);
+
+        const accessibleGyms = storedGyms.filter(gym =>
+          storedUser!.gymAssignments.some(assignment => assignment.gymId === gym.id)
+        );
+        setUserGyms(accessibleGyms);
+      } else {
+        setUser(null);
+        setUserGyms([]);
+      }
 
       // Set current gym
       const currentGymId = currentGymStorage.get();
