@@ -5,10 +5,18 @@ const _origWarn = console.warn.bind(console);
 const _origError = console.error.bind(console);
 const _filterText = 'Support for defaultProps will be removed from function components';
 
+function _argsToString(args: any[]) {
+  try {
+    return args.map(a => (typeof a === 'string' ? a : JSON.stringify(a))).join(' ');
+  } catch (e) {
+    return String(args[0]);
+  }
+}
+
 console.warn = (...args: any[]) => {
   try {
-    const msg = args[0] && (typeof args[0] === 'string' ? args[0] : JSON.stringify(args[0]));
-    if (msg && msg.includes(_filterText) && /(XAxis|YAxis|Bar)/.test(msg)) return;
+    const combined = _argsToString(args);
+    if (combined.includes(_filterText) && /(XAxis|YAxis|Bar)/.test(combined)) return;
   } catch (e) {
     // ignore
   }
@@ -17,8 +25,8 @@ console.warn = (...args: any[]) => {
 
 console.error = (...args: any[]) => {
   try {
-    const msg = args[0] && (typeof args[0] === 'string' ? args[0] : JSON.stringify(args[0]));
-    if (msg && msg.includes(_filterText) && /(XAxis|YAxis|Bar)/.test(msg)) return;
+    const combined = _argsToString(args);
+    if (combined.includes(_filterText) && /(XAxis|YAxis|Bar)/.test(combined)) return;
   } catch (e) {
     // ignore
   }
