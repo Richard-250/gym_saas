@@ -15,28 +15,17 @@ export const Gyms: React.FC = () => {
     switch (status) {
       case 'active':
         return 'default';
+      case 'inactive':
       case 'expired':
         return 'destructive';
-      case 'canceled':
-        return 'secondary';
       default:
         return 'outline';
     }
   };
 
-  const getPlanTypeColor = (planType: string) => {
-    switch (planType) {
-      case 'trial':
-        return 'text-warning';
-      case 'basic':
-        return 'text-primary';
-      case 'premium':
-        return 'text-success';
-      case 'enterprise':
-        return 'text-purple-600';
-      default:
-        return 'text-muted-foreground';
-    }
+  const statusLabel = (sub: any) => {
+    if (!sub) return 'Not Active';
+    return sub.status === 'active' ? 'Active' : 'Not Active';
   };
 
   return (
