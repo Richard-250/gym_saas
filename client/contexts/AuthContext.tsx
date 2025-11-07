@@ -222,6 +222,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     currentGym,
     userGyms,
     login,
+    register,
     logout,
     setCurrentGym,
     refreshGyms,
