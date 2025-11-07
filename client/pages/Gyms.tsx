@@ -144,8 +144,10 @@ export const Gyms: React.FC = () => {
                         Open Dashboard
                       </Link>
                     </Button>
-                    <Button variant="outline" size="icon" className="border-white/20 text-white hover:bg-white/10">
-                      <Settings className="h-4 w-4" />
+                    <Button variant="outline" size="icon" className="border-white/20 text-white hover:bg-white/10" asChild>
+                      <Link to={`/gyms/${gym.id}/staff`}>
+                        <Settings className="h-4 w-4" />
+                      </Link>
                     </Button>
                   </div>
                 </div>
