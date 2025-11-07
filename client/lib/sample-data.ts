@@ -55,10 +55,10 @@ export const generateSampleGyms = (): Gym[] => [
     logo: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=200&h=200&fit=crop',
     ownerId: 'user-1',
     settings: {
-      timezone: 'UTC',
-      currency: 'USD',
-      address: '456 Athletic Ave, City, State 12345',
-      phone: '+1 (555) 987-6543',
+      timezone: 'Africa/Kigali',
+      currency: 'RWF',
+      address: '456 Athletic Ave, Kigali, Rwanda',
+      phone: '+250 788 111 111',
       email: 'info@elitetraining.com',
       openingHours: {
         monday: { open: '05:00', close: '23:00' },
