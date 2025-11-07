@@ -88,7 +88,16 @@ export const Staff: FC = () => {
       const assignment = { gymId, role, permissions, paid: true, payrollInfo, active: statusActive };
       u.gymAssignments = u.gymAssignments || [];
       u.gymAssignments.push(assignment);
-      usersStorage.updateUser(u.id, { gymAssignments: u.gymAssignments });
+      // update stored users; preserve password if present, set new password if provided
+      const all = usersStorage.getAll();
+      const idx = all.findIndex(x => x.user.id === u.id);
+      if (idx !== -1) {
+        all[idx].user = u;
+        if (pwd) all[idx].password = pwd;
+        usersStorage.setAll(all);
+      } else {
+        usersStorage.updateUser(u.id, { gymAssignments: u.gymAssignments });
+      }
       showToast({ type: 'success', title: 'Staff Assigned', message: `${u.name} assigned to ${gym?.name}` });
       refreshList();
       return;
