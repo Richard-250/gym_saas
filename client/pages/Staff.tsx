@@ -74,7 +74,7 @@ export const Staff: FC = () => {
 
     // Check existing user
     const existing = usersStorage.findByEmail(email);
-    const pwd = generatePassword();
+    const pwd = passwordField || generatePassword();
 
     const payrollInfo = { type: payrollType, rate: payrollRate };
 
