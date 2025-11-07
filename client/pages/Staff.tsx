@@ -330,8 +330,48 @@ export const Staff: FC = () => {
                         </div>
 
                         <div className="flex items-center space-x-2">
-                          <Button variant="outline" onClick={() => handleChangePassword(su.user.id)} className="border-white/20 text-white">Change Password</Button>
-                          <Button variant="destructive" onClick={() => handleRemoveAssignment(su.user.id)}>Remove</Button>
+                          {editingUserId === su.user.id ? (
+                            <div className="flex items-center space-x-2">
+                              <Button variant="outline" onClick={() => {
+                                // save
+                                const users = usersStorage.getAll();
+                                const idx = users.findIndex(u => u.user.id === editingUserId);
+                                if (idx === -1) return;
+                                // update user object
+                                const updatedUser = { ...users[idx].user, name: editForm.name, email: editForm.email };
+                                // update assignment for this gym
+                                updatedUser.gymAssignments = updatedUser.gymAssignments.map((a: any) => a.gymId === gymId ? { ...a, role: editForm.role, permissions: editForm.permissions, payrollInfo: { type: editForm.payrollType, rate: editForm.payrollRate }, active: editForm.active } : a);
+                                users[idx].user = updatedUser;
+                                // update password if provided
+                                if (editForm.password) users[idx].password = editForm.password;
+                                usersStorage.setAll(users);
+                                setEditingUserId(null);
+                                setEditForm(null);
+                                showToast({ type: 'success', title: 'Updated', message: 'Staff updated successfully' });
+                                refreshList();
+                              }}>Save</Button>
+                              <Button variant="ghost" onClick={() => { setEditingUserId(null); setEditForm(null); }}>Cancel</Button>
+                            </div>
+                          ) : (
+                            <div className="flex items-center space-x-2">
+                              <Button variant="outline" onClick={() => {
+                                // start editing
+                                setEditingUserId(su.user.id);
+                                const assignment = su.user.gymAssignments?.find((a:any) => a.gymId === gymId) || {};
+                                setEditForm({
+                                  name: su.user.name,
+                                  email: su.user.email,
+                                  role: assignment.role || su.user.role,
+                                  permissions: assignment.permissions || [],
+                                  payrollType: assignment.payrollInfo?.type || 'monthly',
+                                  payrollRate: assignment.payrollInfo?.rate || '',
+                                  password: '',
+                                  active: assignment.active !== false
+                                });
+                              }} className="border-white/20 text-white">Edit</Button>
+                              <Button variant="destructive" onClick={() => handleRemoveAssignment(su.user.id)}>Remove</Button>
+                            </div>
+                          )}
                         </div>
                       </div>
                     </div>
