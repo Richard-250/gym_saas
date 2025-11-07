@@ -113,4 +113,12 @@ const App = () => (
   </QueryClientProvider>
 );
 
-createRoot(document.getElementById("root")!).render(<App />);
+const container = document.getElementById("root");
+if (container) {
+  // Reuse the root across HMR reloads to avoid calling createRoot multiple times
+  const globalAny = window as any;
+  if (!globalAny.__REACT_ROOT__) {
+    globalAny.__REACT_ROOT__ = createRoot(container);
+  }
+  globalAny.__REACT_ROOT__.render(<App />);
+}
