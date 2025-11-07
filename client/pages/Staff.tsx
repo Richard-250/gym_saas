@@ -85,7 +85,7 @@ export const Staff: FC = () => {
         showToast({ type: 'warning', title: 'Already assigned', message: 'User already assigned to this gym' });
         return;
       }
-      const assignment = { gymId, role, permissions, paid: true, payrollInfo };
+      const assignment = { gymId, role, permissions, paid: true, payrollInfo, active: statusActive };
       u.gymAssignments = u.gymAssignments || [];
       u.gymAssignments.push(assignment);
       usersStorage.updateUser(u.id, { gymAssignments: u.gymAssignments });
