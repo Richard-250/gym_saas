@@ -157,13 +157,17 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         }
       } else {
         const accessibleGyms = storedGyms.filter(gym =>
-          stored.user.gymAssignments.some(assignment => assignment.gymId === gym.id) ||
+          stored.user.gymAssignments?.some((assignment: any) => assignment.gymId === gym.id) ||
           gym.ownerId === stored.user.id
         );
         setUserGyms(accessibleGyms);
-        if (accessibleGyms.length > 0) {
+        // If user has access to exactly one gym, set it. If multiple, allow the user to choose on the /gyms page.
+        if (accessibleGyms.length === 1) {
           setCurrentGymState(accessibleGyms[0]);
           currentGymStorage.set(accessibleGyms[0].id);
+        } else {
+          setCurrentGymState(null);
+          currentGymStorage.remove();
         }
       }
 
