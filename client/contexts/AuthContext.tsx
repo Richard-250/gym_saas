@@ -17,12 +17,22 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+// Return a safe default if used outside provider to prevent runtime errors during render
+const SAFE_DEFAULT: AuthContextType = {
+  user: null,
+  currentGym: null,
+  userGyms: [],
+  login: async () => false,
+  register: async () => ({ success: false, message: 'Auth provider not initialized' }),
+  logout: () => {},
+  setCurrentGym: () => {},
+  refreshGyms: () => {},
+  isLoading: true,
+};
+
 export const useAuth = () => {
   const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
+  return context ?? SAFE_DEFAULT;
 };
 
 interface AuthProviderProps {
