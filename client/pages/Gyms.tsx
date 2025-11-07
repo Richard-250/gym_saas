@@ -84,7 +84,7 @@ export const Gyms: React.FC = () => {
                     </AvatarFallback>
                   </Avatar>
                   <Badge variant={getSubscriptionBadgeVariant(gym.subscription.status)}>
-                    {gym.subscription.planType}
+                    {statusLabel(gym.subscription)}
                   </Badge>
                 </div>
                 <div>
