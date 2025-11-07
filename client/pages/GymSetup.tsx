@@ -109,15 +109,24 @@ export const GymSetup: React.FC = () => {
       // Save to localStorage
       gymStorage.add(newGym);
 
-      // Update user's gym assignments to include the new gym
+      // Update user's gym assignments to include the new gym and mark as paid (owner)
       const currentUser = userStorage.get();
       if (currentUser) {
         currentUser.gymAssignments.push({
           gymId: newGym.id,
           role: 'owner',
-          permissions: ['all']
+          permissions: ['all'],
+          paid: true
         });
         userStorage.set(currentUser);
+
+        // Also update the global users list if present
+        try {
+          const { usersStorage } = await import('@/lib/storage');
+          usersStorage.updateUser(currentUser.id, { gymAssignments: currentUser.gymAssignments });
+        } catch (e) {
+          // ignore if module cannot be imported dynamically
+        }
       }
 
       // Refresh gyms in context
