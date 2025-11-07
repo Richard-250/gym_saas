@@ -1,29 +1,18 @@
 import "./global.css";
 
-// Silence noisy Recharts warnings about defaultProps on function components
-// These warnings come from a third-party library (recharts) and are safe for now.
-// We filter only the specific message to avoid hiding other useful warnings.
-const _origWarn = console.warn.bind(console);
-const _origError = console.error.bind(console);
-const _filterRegex = /Support for defaultProps will be removed from function components/;
-console.warn = (...args: any[]) => {
-  try {
-    const msg = args[0] && (typeof args[0] === 'string' ? args[0] : JSON.stringify(args[0]));
-    if (msg && _filterRegex.test(msg) && /(XAxis|YAxis)/.test(msg)) return;
-  } catch (e) {
-    // ignore
+// Try to remove defaultProps from Recharts components that trigger React warnings
+// This mutates the third-party module at runtime to avoid the deprecation warning
+try {
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const Recharts = require('recharts');
+  if (Recharts) {
+    try { delete Recharts.XAxis?.defaultProps; } catch (e) {}
+    try { delete Recharts.YAxis?.defaultProps; } catch (e) {}
+    try { delete Recharts.Bar?.defaultProps; } catch (e) {}
   }
-  return _origWarn(...args);
-};
-console.error = (...args: any[]) => {
-  try {
-    const msg = args[0] && (typeof args[0] === 'string' ? args[0] : JSON.stringify(args[0]));
-    if (msg && _filterRegex.test(msg) && /(XAxis|YAxis)/.test(msg)) return;
-  } catch (e) {
-    // ignore
-  }
-  return _origError(...args);
-};
+} catch (e) {
+  // ignore if recharts not available or require fails
+}
 
 import { Toaster } from "@/components/ui/toaster";
 import { createRoot } from "react-dom/client";
