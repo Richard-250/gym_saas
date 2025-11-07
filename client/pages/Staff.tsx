@@ -281,6 +281,7 @@ export const Staff: FC = () => {
 
             <div className="mt-4 flex items-center space-x-4">
               <label className="flex items-center space-x-2 text-white"><input type="checkbox" checked={sendInvite} onChange={(e) => setSendInvite(e.target.checked)} /> <span>Send Invitation</span></label>
+              <label className="flex items-center space-x-2 text-white"><input type="checkbox" checked={statusActive} onChange={(e) => setStatusActive(e.target.checked)} /> <span>Active</span></label>
               <Button onClick={handleCreate} className="bg-primary">Add Staff Member</Button>
             </div>
           </CardContent>
