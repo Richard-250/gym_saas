@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState, FC } from 'react';
+import { useEffect, useState, FC } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { Gym } from '@shared/types';
 import { usersStorage, gymStorage, userStorage } from '@/lib/storage';
@@ -24,7 +24,7 @@ const allPermissions = [
 
 const generatePassword = () => Math.random().toString(36).slice(-8) + 'A1!';
 
-export const Staff: React.FC = () => {
+export const Staff: FC = () => {
   const { gymId } = useParams<{ gymId: string }>();
   const navigate = useNavigate();
   const { showToast } = useToast();
