@@ -64,25 +64,16 @@ export const Login: React.FC = () => {
     setError('');
 
     try {
-      // Simulate registration process
-      await new Promise(resolve => setTimeout(resolve, 1500));
-
-      // For demo purposes, auto-login after registration
-      const success = await login(email, password);
-      if (success) {
-        showToast({
-          type: 'success',
-          title: 'Account Created Successfully',
-          message: `Welcome to GymSaaS! Your gym "${gymName}" has been created.`
-        });
+      const result = await register(name, email, password);
+      if (result.success) {
+        showToast({ type: 'success', title: 'Account Created', message: 'Account created. You are now signed in.' });
+      } else {
+        setError(result.message || 'Registration failed.');
+        showToast({ type: 'error', title: 'Registration Failed', message: result.message || 'Unable to create your account.' });
       }
     } catch (err) {
       setError('Registration failed. Please try again.');
-      showToast({
-        type: 'error',
-        title: 'Registration Failed',
-        message: 'Unable to create your account. Please try again.'
-      });
+      showToast({ type: 'error', title: 'Registration Failed', message: 'Unable to create your account. Please try again.' });
     } finally {
       setIsSubmitting(false);
     }
