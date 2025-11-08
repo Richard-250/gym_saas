@@ -426,6 +426,16 @@ export const Staff: FC = () => {
                           ) : ''}</div>
                         </div>
 
+                        {expandedAssignments[su.user.id] && (
+                          <div className="w-full mt-2">
+                            <div className="text-xs text-white/60 mb-1">Assigned Gyms:</div>
+                            <div className="text-sm text-white">{(su.user.gymAssignments || []).map((a:any)=>{
+                              const g = gymStorage.getById(a.gymId);
+                              return g ? g.name : a.gymId;
+                            }).join(', ')}</div>
+                          </div>
+                        )}
+
                         <div className="flex items-center space-x-2">
                           {editingUserId === su.user.id ? (
                             <div className="w-full">
