@@ -192,6 +192,13 @@ export const Staff: FC = () => {
             </Button>
           </Link>
 
+          <Link to={gym ? `/gyms/${gym.id}/payroll` : '/gyms'} className="w-full">
+            <Button variant="ghost" className="w-full flex flex-col items-center justify-center text-sidebar-foreground h-16 px-1 group">
+              <Calendar className="h-5 w-5 mb-1" />
+              <span className="text-xs text-sidebar-foreground/80">Payroll</span>
+            </Button>
+          </Link>
+
           <Link to={gym ? `/gyms/${gym.id}/marketing` : '/gyms'} className="w-full">
             <Button variant="ghost" className="w-full flex flex-col items-center justify-center text-sidebar-foreground h-16 px-1 group">
               <Calendar className="h-5 w-5 mb-1" />
