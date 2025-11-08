@@ -427,11 +427,20 @@ export const Staff: FC = () => {
 
                         {expandedAssignments[su.user.id] && (
                           <div className="w-full mt-2">
-                            <div className="text-xs text-white/60 mb-1">Assigned Gyms:</div>
-                            <div className="text-sm text-white">{(su.user.gymAssignments || []).map((a:any)=>{
-                              const g = gymStorage.getById(a.gymId);
-                              return g ? g.name : a.gymId;
-                            }).join(', ')}</div>
+                            <div className="text-xs text-white/60 mb-1">Assigned Gyms & Roles:</div>
+                            <div className="text-sm text-white">
+                              {(su.user.gymAssignments || []).map((a:any, idx:number)=>{
+                                const g = gymStorage.getById(a.gymId);
+                                return (
+                                  <div key={a.gymId+idx} className="mb-1">
+                                    <span className="font-medium">{g ? g.name : a.gymId}</span>
+                                    <span className="text-white/60"> — {a.role}</span>
+                                    <span className="text-white/60"> • {a.active ? 'Active' : 'Inactive'}</span>
+                                    <span className="text-white/60">{a.paid ? ' • Paid' : ''}</span>
+                                  </div>
+                                );
+                              })}
+                            </div>
                           </div>
                         )}
 
