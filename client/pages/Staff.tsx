@@ -413,7 +413,17 @@ export const Staff: FC = () => {
 
                         <div className="text-sm">
                           <div className="text-white/80">Gyms</div>
-                          <div className="font-medium text-white">{1 + otherGyms.length}{otherGyms.length > 0 ? ` (+${otherGyms.length} more)` : ''}</div>
+                          <div className="font-medium text-white">{1 + otherGyms.length}{otherGyms.length > 0 ? (
+                            <>
+                              {` (+${otherGyms.length} more)`}
+                              <button
+                                onClick={() => setExpandedAssignments({ ...expandedAssignments, [su.user.id]: !expandedAssignments[su.user.id] })}
+                                className="ml-2 text-primary underline text-xs"
+                              >
+                                {expandedAssignments[su.user.id] ? 'Hide' : 'View'}
+                              </button>
+                            </>
+                          ) : ''}</div>
                         </div>
 
                         <div className="flex items-center space-x-2">
