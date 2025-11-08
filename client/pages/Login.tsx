@@ -10,7 +10,7 @@ import { Loader2, Dumbbell } from 'lucide-react';
 import { Navigate } from 'react-router-dom';
 
 export const Login: React.FC = () => {
-  const { login, register, user, isLoading } = useAuth();
+  const { login, register, user, isLoading, userGyms } = useAuth();
   const { showToast } = useToast();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
