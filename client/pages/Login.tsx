@@ -22,11 +22,26 @@ export const Login: React.FC = () => {
 
   // Redirect if already logged in
   if (user && !isLoading) {
-    // Trainers and members go to member portal
-    if (user.role === 'trainer' || user.role === 'member') {
+    const staffRoles = ['manager', 'trainer', 'front-desk'];
+    // Owners and admins see gyms list to choose/manage
+    if (user.role === 'owner' || user.role === 'admin') {
+      return <Navigate to="/gyms" replace />;
+    }
+
+    // Staff members (manager/trainer/front-desk) should go to dashboard directly
+    if (staffRoles.includes(user.role)) {
+      // if assigned to multiple gyms, show gyms to choose from
+      if (userGyms && userGyms.length > 1) {
+        return <Navigate to="/gyms" replace />;
+      }
+      return <Navigate to="/dashboard" replace />;
+    }
+
+    // Members continue to member portal
+    if (user.role === 'member') {
       return <Navigate to="/member-portal" replace />;
     }
-    // Admin sees gyms list; owners/managers see gyms dashboard
+
     return <Navigate to="/gyms" replace />;
   }
 
