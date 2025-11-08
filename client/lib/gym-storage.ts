@@ -145,17 +145,17 @@ export const gymTaskStorage = {
 // Gym-specific notification storage
 export const gymNotificationStorage = {
   getAll: (gymId: string): Notification[] => getGymStorageItem<Notification>(gymId, 'notifications'),
-  
+
   set: (gymId: string, notifications: Notification[]): void => {
     setGymStorageItem(gymId, 'notifications', notifications);
   },
-  
+
   add: (gymId: string, notification: Notification): void => {
     const notifications = gymNotificationStorage.getAll(gymId);
     notifications.push(notification);
     gymNotificationStorage.set(gymId, notifications);
   },
-  
+
   markAsRead: (gymId: string, notificationId: string): void => {
     const notifications = gymNotificationStorage.getAll(gymId);
     const index = notifications.findIndex(n => n.id === notificationId);
@@ -164,13 +164,42 @@ export const gymNotificationStorage = {
       gymNotificationStorage.set(gymId, notifications);
     }
   },
-  
+
   markAllAsRead: (gymId: string, userId: string): void => {
     const notifications = gymNotificationStorage.getAll(gymId);
-    const updated = notifications.map(n => 
+    const updated = notifications.map(n =>
       n.userId === userId ? { ...n, read: true } : n
     );
     gymNotificationStorage.set(gymId, updated);
+  }
+};
+
+// Gym-specific payroll storage
+export const gymPayrollStorage = {
+  getAll: (gymId: string) => getGymStorageItem<any>(gymId, 'payrolls'),
+
+  set: (gymId: string, items: any[]): void => {
+    setGymStorageItem(gymId, 'payrolls', items);
+  },
+
+  add: (gymId: string, item: any): void => {
+    const items = gymPayrollStorage.getAll(gymId);
+    items.push(item);
+    gymPayrollStorage.set(gymId, items);
+  },
+
+  update: (gymId: string, itemId: string, updates: Partial<any>): void => {
+    const items = gymPayrollStorage.getAll(gymId);
+    const index = items.findIndex((p: any) => p.id === itemId);
+    if (index !== -1) {
+      items[index] = { ...items[index], ...updates };
+      gymPayrollStorage.set(gymId, items);
+    }
+  },
+
+  remove: (gymId: string, itemId: string): void => {
+    const items = gymPayrollStorage.getAll(gymId).filter((p: any) => p.id !== itemId);
+    gymPayrollStorage.set(gymId, items as any);
   }
 };
 
