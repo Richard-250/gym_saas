@@ -377,7 +377,26 @@ export const Staff: FC = () => {
                         <div>
                           <div className="text-white font-medium">{su.user.name}</div>
                           <div className="text-sm text-white/60">{su.user.email}</div>
-                          <div className="text-xs text-white/60 mt-1">{assignment?.permissions?.slice(0,4).join(', ') || 'No permissions'}</div>
+                          <div className="text-xs text-white/60 mt-1">
+                            {(() => {
+                              const perms = assignment?.permissions || [];
+                              if (perms.length === 0) return 'No permissions';
+                              const isExpanded = !!expandedPermissions[su.user.id];
+                              const shown = isExpanded ? perms : perms.slice(0, 3);
+                              return (
+                                <>
+                                  {shown.join(', ')}{perms.length > 3 && (
+                                    <button
+                                      onClick={() => setExpandedPermissions({ ...expandedPermissions, [su.user.id]: !isExpanded })}
+                                      className="ml-2 text-primary underline text-xs"
+                                    >
+                                      {isExpanded ? 'View less' : `View ${perms.length - shown.length} more`}
+                                    </button>
+                                  )}
+                                </>
+                              );
+                            })()}
+                          </div>
                         </div>
                       </div>
 
