@@ -154,9 +154,7 @@ export const Dashboard: React.FC = () => {
       </div>
 
       {/* Sidebar */}
-      <div className={`fixed left-0 top-0 h-full bg-sidebar border-r border-sidebar-border flex flex-col py-4 transition-all duration-300 z-40 ${
-        isMobileMenuOpen ? 'w-64' : 'w-[85px] lg:w-[85px] -translate-x-full lg:translate-x-0'
-      }`}>
+      <div className="fixed left-0 top-0 h-full bg-sidebar border-r border-sidebar-border flex flex-col py-4 z-40 w-[85px] lg:w-[85px]">
         {/* Logo */}
         <div className="flex items-center justify-center px-3 mb-8">
           <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
