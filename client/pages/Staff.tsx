@@ -1,4 +1,3 @@
-import { useEffect, useState, FC } from 'react';
 import React, { useEffect, useState, FC } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { Gym } from '@shared/types';
