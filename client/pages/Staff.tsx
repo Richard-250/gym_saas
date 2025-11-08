@@ -45,6 +45,8 @@ export const Staff: FC = () => {
 
   const [editingUserId, setEditingUserId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState<any>(null);
+  const [expandedPermissions, setExpandedPermissions] = useState<Record<string, boolean>>({});
+  const [expandedAssignments, setExpandedAssignments] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     if (!gymId) return;
