@@ -194,12 +194,6 @@ export const Staff: FC = () => {
             </Button>
           </Link>
 
-          <Link to={gym ? `/gyms/${gym.id}/payroll` : '/gyms'} className="w-full">
-            <Button variant="ghost" className="w-full flex flex-col items-center justify-center text-sidebar-foreground h-16 px-1 group">
-              <Calendar className="h-5 w-5 mb-1" />
-              <span className="text-xs text-sidebar-foreground/80">Payroll</span>
-            </Button>
-          </Link>
 
           <Link to={gym ? `/gyms/${gym.id}/marketing` : '/gyms'} className="w-full">
             <Button variant="ghost" className="w-full flex flex-col items-center justify-center text-sidebar-foreground h-16 px-1 group">
@@ -270,10 +264,18 @@ export const Staff: FC = () => {
         <div className="mb-6">
           <div className="flex space-x-2">
             <Button className="bg-primary">Managers & Staff</Button>
-            <Button variant="ghost">Payroll</Button>
-            <Button variant="ghost">Schedule</Button>
-            <Button variant="ghost">Bookings</Button>
-            <Button variant="ghost">Programs</Button>
+            <Link to={gym ? `/gyms/${gym.id}/payroll` : '/gyms'}>
+              <Button variant="ghost">Payroll</Button>
+            </Link>
+            <Link to={gym ? `/gyms/${gym.id}/schedule` : '/gyms'}>
+              <Button variant="ghost">Schedule</Button>
+            </Link>
+            <Link to={gym ? `/gyms/${gym.id}/bookings` : '/gyms'}>
+              <Button variant="ghost">Bookings</Button>
+            </Link>
+            <Link to={gym ? `/gyms/${gym.id}/programs` : '/gyms'}>
+              <Button variant="ghost">Programs</Button>
+            </Link>
           </div>
         </div>
 
