@@ -140,6 +140,11 @@ function AppRoutes() {
           <Staff />
         </ProtectedRoute>
       } />
+      <Route path="/gyms/:gymId/payroll" element={
+        <ProtectedRoute>
+          <Payroll />
+        </ProtectedRoute>
+      } />
 
       {/* Default redirect */}
       <Route path="/" element={<Navigate to="/gyms" replace />} />
