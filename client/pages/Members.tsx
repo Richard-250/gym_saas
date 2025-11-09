@@ -779,9 +779,10 @@ export const Members: React.FC = () => {
                   phone: memberData.phone,
                   membershipType: memberData.membershipType,
                   startDate: new Date().toISOString(),
-                  status: 'active',
+                  status: memberData.accountStatus || 'active',
                   checkinCode: memberData.checkinCode || `${Math.floor(1000 + Math.random() * 9000)}`,
                   amountPaid: memberData.amountPaid || 0,
+                  amountStatus: memberData.amountStatus || 'paid',
                   accountType: memberData.accountType || 'member',
                   password: memberData.password || ''
                 };
