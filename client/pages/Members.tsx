@@ -807,7 +807,9 @@ export const Members: React.FC = () => {
                 phone: memberData.phone,
                 membershipType: memberData.membershipType,
                 amountPaid: memberData.amountPaid || 0,
-                accountType: memberData.accountType || 'member'
+                amountStatus: memberData.amountStatus || 'paid',
+                accountType: memberData.accountType || 'member',
+                status: memberData.accountStatus || 'active'
               };
               if (memberData.checkinCode) updates.checkinCode = memberData.checkinCode;
               if (memberData.password) updates.password = memberData.password;
