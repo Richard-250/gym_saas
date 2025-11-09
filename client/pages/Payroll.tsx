@@ -313,10 +313,26 @@ const Payroll: React.FC = () => {
                       <div className="font-medium text-white">{daysUntilNext(item) === '-' ? '-' : `${daysUntilNext(item)} days`}</div>
                       <div className="mt-2 flex items-center justify-end space-x-2">
                         <span className={`px-2 py-1 rounded text-xs ${item.status === 'paid' ? 'bg-green-600 text-white' : item.status === 'active' ? 'bg-blue-600 text-white' : 'bg-red-600 text-white'}`}>{item.status === 'paid' ? 'Paid' : item.status === 'active' ? 'Active' : 'Unpaid'}</span>
-                        <Button variant="outline" onClick={() => toggleActive(item.id, item.status !== 'active')}>{item.status === 'active' ? 'Pause' : 'Activate'}</Button>
+                        <Button variant="outline" onClick={() => {
+                          const newName = prompt('Edit worker name', item.name || '');
+                          if (newName === null) return;
+                          const newRateStr = prompt('Edit rate', String(item.rate || 0));
+                          if (newRateStr === null) return;
+                          const newRate = Number(newRateStr) || 0;
+                          gymPayrollStorage.update(gymId, item.id, { name: newName, rate: newRate, lastModifiedBy: currentUser?.id || 'system', lastModifiedAt: new Date().toISOString() });
+                          showToast({ type: 'success', title: 'Updated', message: `${newName} updated` });
+                          refresh();
+                        }}>Edit</Button>
+                        <Button variant="destructive" onClick={() => {
+                          const typed = prompt('Type DELETE to confirm permanent removal from payroll');
+                          if (typed !== 'DELETE') return showToast({ type: 'warning', title: 'Aborted', message: 'Deletion cancelled' });
+                          gymPayrollStorage.remove(gymId, item.id);
+                          showToast({ type: 'success', title: 'Deleted', message: `${item.name} removed from payroll` });
+                          refresh();
+                        }}>Delete</Button>
                         <Button className="bg-primary" onClick={() => markPaid(item.id)}>Mark Paid</Button>
                       </div>
-                      <div className="text-xs text-white/60 mt-2">{item.lastModifiedBy ? `Last action by ${getUserById(item.lastModifiedBy)?.name || item.lastModifiedBy}` : ''}</div>
+                      <div className="text-xs text-white/60 mt-2">{item.lastModifiedBy ? `Last action by ${getUserById(item.lastModifiedBy)?.name || item.lastModifiedBy}` : ''}{item.createdBy ? ` • Created by ${getUserById(item.createdBy)?.name || item.createdBy}` : ''}</div>
                     </div>
                   </div>
                 ))}
