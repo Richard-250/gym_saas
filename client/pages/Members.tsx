@@ -715,26 +715,90 @@ export const Members: React.FC = () => {
           memberId={showEditMember}
           onClose={() => setShowEditMember(null)}
           onSave={(memberData) => {
-            if (showEditMember === 'new' && currentGym) {
-              // Add new member to gym-specific storage
-              const newMember: Member = {
-                id: `member-${currentGym.id}-${Date.now()}`,
-                gymId: currentGym.id,
-                name: `${memberData.firstName} ${memberData.lastName}`,
-                email: memberData.email,
-                phone: memberData.phone,
-                membershipType: memberData.membershipType,
-                startDate: new Date().toISOString(),
-                status: 'active'
-              };
+            if (!currentGym) return;
 
-              gymMemberStorage.add(currentGym.id, newMember);
+            // Create or update
+            if (showEditMember === 'new') {
+              // If family account, create multiple members and link them
+              if (memberData.accountType === 'family' && Array.isArray(memberData.familyMembers) && memberData.familyMembers.length > 0) {
+                const createdIds: string[] = [];
+                memberData.familyMembers.forEach((fm: any, idx: number) => {
+                  const id = `member-${currentGym.id}-${Date.now()}-${idx}`;
+                  const memberObj: any = {
+                    id,
+                    gymId: currentGym.id,
+                    name: `${fm.firstName} ${fm.lastName}`.trim(),
+                    email: fm.email || '',
+                    phone: fm.phone || '',
+                    membershipType: memberData.membershipType,
+                    startDate: new Date().toISOString(),
+                    status: 'active',
+                    checkinCode: idx === 0 ? memberData.checkinCode : `${Math.floor(1000 + Math.random() * 9000)}`,
+                    amountPaid: idx === 0 ? (memberData.amountPaid || 0) : 0,
+                    accountType: 'family',
+                    familyPrimaryId: undefined,
+                    password: memberData.password || ''
+                  };
+                  gymMemberStorage.add(currentGym.id, memberObj);
+                  createdIds.push(id);
+                });
+                // update familyPrimaryId for others
+                if (createdIds.length > 0) {
+                  const primary = createdIds[0];
+                  createdIds.slice(1).forEach(cid => {
+                    gymMemberStorage.update(currentGym.id, cid, { familyPrimaryId: primary });
+                  });
+                }
+              } else {
+                // single member or visitor
+                const id = `member-${currentGym.id}-${Date.now()}`;
+                const newMember: any = {
+                  id,
+                  gymId: currentGym.id,
+                  name: `${memberData.firstName} ${memberData.lastName}`.trim(),
+                  email: memberData.email,
+                  phone: memberData.phone,
+                  membershipType: memberData.membershipType,
+                  startDate: new Date().toISOString(),
+                  status: 'active',
+                  checkinCode: memberData.checkinCode || `${Math.floor(1000 + Math.random() * 9000)}`,
+                  amountPaid: memberData.amountPaid || 0,
+                  accountType: memberData.accountType || 'member',
+                  password: memberData.password || ''
+                };
+                gymMemberStorage.add(currentGym.id, newMember);
+              }
 
               // Refresh members list
               const updatedMembers = gymMemberStorage.getAll(currentGym.id);
               const membersWithCheckIn: MemberWithCheckIn[] = updatedMembers.map((member, index) => ({
                 ...member,
-                checkinCode: `${2000 + index}${member.id.slice(-2)}`,
+                checkinCode: (member as any).checkinCode || `${2000 + index}${member.id.slice(-2)}`,
+                age: Math.floor(Math.random() * 30) + 20,
+                billingStatus: ['paid', 'overdue', 'pending'][Math.floor(Math.random() * 3)] as 'paid' | 'overdue' | 'pending'
+              }));
+              setMembers(membersWithCheckIn);
+            } else {
+              // update existing member
+              const idToUpdate = showEditMember;
+              const updates: any = {
+                name: `${memberData.firstName} ${memberData.lastName}`.trim(),
+                email: memberData.email,
+                phone: memberData.phone,
+                membershipType: memberData.membershipType,
+                amountPaid: memberData.amountPaid || 0,
+                accountType: memberData.accountType || 'member'
+              };
+              if (memberData.checkinCode) updates.checkinCode = memberData.checkinCode;
+              if (memberData.password) updates.password = memberData.password;
+
+              gymMemberStorage.update(currentGym.id, idToUpdate as string, updates);
+
+              // Refresh members list
+              const updatedMembers = gymMemberStorage.getAll(currentGym.id);
+              const membersWithCheckIn: MemberWithCheckIn[] = updatedMembers.map((member, index) => ({
+                ...member,
+                checkinCode: (member as any).checkinCode || `${2000 + index}${member.id.slice(-2)}`,
                 age: Math.floor(Math.random() * 30) + 20,
                 billingStatus: ['paid', 'overdue', 'pending'][Math.floor(Math.random() * 3)] as 'paid' | 'overdue' | 'pending'
               }));
