@@ -245,8 +245,54 @@ export const Members: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      {/* Sidebar (persistent) */}
+      <div className="fixed left-0 top-0 h-full bg-sidebar border-r border-sidebar-border flex flex-col py-4 z-40 w-[85px] lg:w-[85px]">
+        <div className="flex items-center justify-center px-3 mb-8">
+          <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
+            <Users className="h-6 w-6 text-primary-foreground" />
+          </div>
+        </div>
+
+        <div className="flex flex-col space-y-1 px-2 flex-1">
+          <Link to="/dashboard" className="w-full">
+            <Button variant="ghost" className="w-full flex flex-col items-center justify-center text-sidebar-foreground h-16 px-1 group">
+              <Users className="h-5 w-5 mb-1" />
+              <span className="text-xs text-sidebar-foreground/80">Dashboard</span>
+            </Button>
+          </Link>
+
+          <Link to="/members" className="w-full">
+            <Button variant="ghost" className="w-full flex flex-col items-center justify-center text-sidebar-foreground h-16 px-1 group">
+              <Users className="h-5 w-5 mb-1" />
+              <span className="text-xs text-sidebar-foreground/80">Members</span>
+            </Button>
+          </Link>
+
+          <Link to={currentGym ? `/gyms/${currentGym.id}/billing` : '/gyms'} className="w-full">
+            <Button variant="ghost" className="w-full flex flex-col items-center justify-center text-sidebar-foreground h-16 px-1 group">
+              <DollarSign className="h-5 w-5 mb-1" />
+              <span className="text-xs text-sidebar-foreground/80">Billing</span>
+            </Button>
+          </Link>
+
+          <Link to={currentGym ? `/gyms/${currentGym.id}/settings` : '/gyms'} className="w-full">
+            <Button variant="ghost" className="w-full flex flex-col items-center justify-center text-sidebar-foreground h-16 px-1 group">
+              <Settings className="h-5 w-5 mb-1" />
+              <span className="text-xs text-sidebar-foreground/80">Settings</span>
+            </Button>
+          </Link>
+
+          <Link to="/help" className="w-full">
+            <Button variant="ghost" className="w-full flex flex-col items-center justify-center text-sidebar-foreground h-16 px-1 group">
+              <Users className="h-5 w-5 mb-1" />
+              <span className="text-xs text-sidebar-foreground/80">Help</span>
+            </Button>
+          </Link>
+        </div>
+      </div>
+
       {/* Header */}
-      <div className="border-b border-white/20 bg-white/5 backdrop-blur-sm p-6">
+      <div className="border-b border-white/20 bg-white/5 backdrop-blur-sm p-6" style={{ marginLeft: '85px' }}>
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
             <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
