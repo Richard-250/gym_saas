@@ -68,6 +68,7 @@ export const Members: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [membershipFilter, setMembershipFilter] = useState<string>('all');
   const [dateRangeFilter, setDateRangeFilter] = useState<string>('all');
+  const [accountTypeFilter, setAccountTypeFilter] = useState<string>('all');
 
   // Load gym-specific members data
   useEffect(() => {
