@@ -9,12 +9,12 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
-import { 
-  Search, 
-  Filter, 
-  Plus, 
-  Download, 
-  Printer, 
+import {
+  Search,
+  Filter,
+  Plus,
+  Download,
+  Printer,
   MoreHorizontal,
   ChevronUp,
   ChevronDown,
@@ -32,7 +32,13 @@ import {
   CreditCard,
   UserCheck,
   Settings,
-  Eye
+  Eye,
+  BarChart3,
+  TrendingUp,
+  Globe,
+  Dumbbell,
+  Building2,
+  HelpCircle
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { gymStorage } from '@/lib/storage';
