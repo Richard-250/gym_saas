@@ -971,6 +971,18 @@ const EditMemberModal: React.FC<{
               <Input id="amountPaid" type="number" value={formData.amountPaid||''} onChange={(e)=>setFormData({...formData, amountPaid: Number(e.target.value)})} className="bg-white/10 border-white/20 text-white" />
             </div>
 
+            <div>
+              <Label htmlFor="amountStatus" className="text-white">Amount Status</Label>
+              <Select value={formData.amountStatus || 'paid'} onValueChange={(v)=>setFormData({...formData, amountStatus: v})}>
+                <SelectTrigger className="bg-white/10 border-white/20 text-white"><SelectValue/></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="paid">Paid</SelectItem>
+                  <SelectItem value="pending">Pending</SelectItem>
+                  <SelectItem value="overdue">Overdue</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
             <div className="md:col-span-2">
               <Label className="text-white">Account Type</Label>
               <div className="flex items-center space-x-4 mt-2">
