@@ -610,9 +610,12 @@ export const Members: React.FC = () => {
                         {member.lastCheckin ? new Date(member.lastCheckin).toLocaleDateString() : 'Never'}
                       </td>
                       <td className="p-4">
-                        <Badge className={getBillingStatusColor(member.billingStatus)}>
-                          {member.billingStatus}
-                        </Badge>
+                        <div className="flex items-center space-x-2">
+                          <Badge className={getBillingStatusColor(member.billingStatus)}>
+                            {member.billingStatus}
+                          </Badge>
+                          <div className="text-xs text-white/70">{(member as any).accountType || 'member'}</div>
+                        </div>
                       </td>
                       <td className="p-4">
                         <div className="flex items-center space-x-2">
