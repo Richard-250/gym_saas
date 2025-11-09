@@ -590,7 +590,10 @@ export const Members: React.FC = () => {
                             </AvatarFallback>
                           </Avatar>
                           <div>
-                            <p className="font-medium text-white">{member.name}</p>
+                            <div className="flex items-center space-x-2">
+                              <span className={`w-2 h-2 rounded-full ${member.status === 'active' ? 'bg-green-400' : 'bg-red-500'}`} />
+                              <p className="font-medium text-white">{member.name}</p>
+                            </div>
                             <p className="text-sm text-primary">{member.email}</p>
                             <p className="text-xs text-white/70">{member.phone}</p>
                           </div>
