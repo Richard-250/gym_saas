@@ -859,7 +859,9 @@ const EditMemberModal: React.FC<{
     checkinCode: '',
     membershipType: '2_weeks',
     amountPaid: 0,
+    amountStatus: 'paid',
     accountType: 'member',
+    accountStatus: 'active',
     familyMembers: [],
     password: '',
     passwordConfirm: ''
