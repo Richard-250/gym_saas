@@ -881,7 +881,9 @@ const EditMemberModal: React.FC<{
           checkinCode: (existing as any).checkinCode || '',
           membershipType: (existing as any).membershipType || '2_weeks',
           amountPaid: (existing as any).amountPaid || 0,
+          amountStatus: (existing as any).amountStatus || 'paid',
           accountType: (existing as any).accountType || 'member',
+          accountStatus: (existing as any).status || 'active',
           familyMembers: (existing as any).familyMembers || [],
           password: '',
           passwordConfirm: ''
