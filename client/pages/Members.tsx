@@ -713,6 +713,28 @@ export const Members: React.FC = () => {
           onSave={(memberData) => {
             if (!currentGym) return;
 
+            // Handle deletion signal
+            if ((memberData as any)._deleted && (memberData as any).id) {
+              const idToDelete = (memberData as any).id as string;
+              // permission
+              const assignment = user?.gymAssignments?.find(a => a.gymId === currentGym?.id);
+              const canDelete = assignment?.permissions?.includes('edit_members') || user?.role === 'admin' || user?.role === 'owner';
+              if (!canDelete) { showToast({ type: 'error', title: 'Permission denied', message: 'You do not have permission to delete members' }); return; }
+              if (!confirm('Type DELETE to permanently remove this member from this gym')) return;
+              gymMemberStorage.remove(currentGym.id, idToDelete);
+              const updatedMembers = gymMemberStorage.getAll(currentGym.id);
+              const membersWithCheckIn: MemberWithCheckIn[] = updatedMembers.map((member, index) => ({
+                ...member,
+                checkinCode: (member as any).checkinCode || `${2000 + index}${member.id.slice(-2)}`,
+                age: Math.floor(Math.random() * 30) + 20,
+                billingStatus: ['paid', 'overdue', 'pending'][Math.floor(Math.random() * 3)] as 'paid' | 'overdue' | 'pending'
+              }));
+              setMembers(membersWithCheckIn);
+              showToast({ type: 'success', title: 'Deleted', message: 'Member removed' });
+              setShowEditMember(null);
+              return;
+            }
+
             // Create or update
             if (showEditMember === 'new') {
               // If family account, create multiple members and link them
