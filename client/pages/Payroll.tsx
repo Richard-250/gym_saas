@@ -22,6 +22,7 @@ const typeToDays: Record<string, number> = {
 
 const Payroll: React.FC = () => {
   const { currentGym, user: currentUser } = useAuth();
+  const { showToast } = useToast();
   const gymId = currentGym?.id;
   const [items, setItems] = useState<any[]>([]);
   const [staffOptions, setStaffOptions] = useState<any[]>([]);
