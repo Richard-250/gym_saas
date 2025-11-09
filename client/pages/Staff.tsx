@@ -1,5 +1,6 @@
 import React, { FC, useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
 import { Gym } from '@shared/types';
 import { usersStorage, gymStorage, userStorage } from '@/lib/storage';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -27,6 +28,7 @@ export const Staff: FC = () => {
   const { gymId } = useParams<{ gymId: string }>();
   const navigate = useNavigate();
   const { showToast } = useToast();
+  const { user: currentUser } = useAuth();
   const [gym, setGym] = useState<Gym | null>(null);
   const [staff, setStaff] = useState<StoredUser[]>([]);
 
@@ -87,7 +89,7 @@ export const Staff: FC = () => {
         showToast({ type: 'warning', title: 'Already assigned', message: 'User already assigned to this gym' });
         return;
       }
-      const assignment = { gymId, role, permissions, paid: true, payrollInfo, active: statusActive };
+      const assignment = { gymId, role, permissions, paid: true, payrollInfo, active: statusActive, addedBy: currentUser?.id || 'system', addedAt: new Date().toISOString() };
       u.gymAssignments = u.gymAssignments || [];
       u.gymAssignments.push(assignment);
       // update stored users; preserve password if present, set new password if provided
@@ -112,7 +114,7 @@ export const Staff: FC = () => {
       role: role === 'trainer' ? 'trainer' : 'manager',
       avatar: undefined,
       createdAt: new Date().toISOString(),
-      gymAssignments: [{ gymId, role: role === 'trainer' ? 'trainer' : 'manager', permissions, paid: true, payrollInfo }]
+      gymAssignments: [{ gymId, role: role === 'trainer' ? 'trainer' : 'manager', permissions, paid: true, payrollInfo, addedBy: currentUser?.id || 'system', addedAt: new Date().toISOString() }]
     };
 
     usersStorage.add(newUser, pwd);
@@ -376,7 +378,7 @@ export const Staff: FC = () => {
                           <AvatarFallback>{su.user.name?.charAt(0)}</AvatarFallback>
                         </Avatar>
                         <div>
-                          <div className="text-white font-medium">{su.user.name}</div>
+                          <div className="text-white font-medium" title={(() => { const ass = assignment; const addedById = ass?.addedBy; const author = usersStorage.getAll().find(u => u.user.id === addedById); return author ? `Added by: ${author.user.name}` : undefined; })()}>{su.user.name}</div>
                           <div className="text-sm text-white/60">{su.user.email}</div>
                           <div className="text-xs text-white/60 mt-1">
                             {(() => {
