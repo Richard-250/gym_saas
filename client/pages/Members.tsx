@@ -471,11 +471,11 @@ export const Members: React.FC = () => {
             {/* Table Header */}
             <div className="flex items-center space-x-4 p-4 border-b border-white/20">
               <div className="flex items-center space-x-2">
-                <Badge variant="secondary" className="bg-primary text-primary-foreground">
-                  Members {filteredAndSortedMembers.length}
+                <Badge variant="secondary" className="bg-primary text-primary-foreground" onClick={() => { setAccountTypeFilter('all'); setStatusFilter('all'); }}>
+                  Members {filteredAndSortedMembers.filter(m => (m as any).accountType !== 'visitor').length}
                 </Badge>
-                <Badge variant="secondary" className="bg-blue-500/20 text-blue-400">
-                  Visitors 0
+                <Badge variant="secondary" className="bg-blue-500/20 text-blue-400" onClick={() => setAccountTypeFilter('visitor')}>
+                  Visitors {filteredAndSortedMembers.filter(m => (m as any).accountType === 'visitor').length}
                 </Badge>
               </div>
               
