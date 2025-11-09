@@ -254,40 +254,28 @@ export const Members: React.FC = () => {
         </div>
 
         <div className="flex flex-col space-y-1 px-2 flex-1">
-          <Link to="/dashboard" className="w-full">
-            <Button variant="ghost" className="w-full flex flex-col items-center justify-center text-sidebar-foreground h-16 px-1 group">
-              <Users className="h-5 w-5 mb-1" />
-              <span className="text-xs text-sidebar-foreground/80">Dashboard</span>
-            </Button>
-          </Link>
-
-          <Link to="/members" className="w-full">
-            <Button variant="ghost" className="w-full flex flex-col items-center justify-center text-sidebar-foreground h-16 px-1 group">
-              <Users className="h-5 w-5 mb-1" />
-              <span className="text-xs text-sidebar-foreground/80">Members</span>
-            </Button>
-          </Link>
-
-          <Link to={currentGym ? `/gyms/${currentGym.id}/billing` : '/gyms'} className="w-full">
-            <Button variant="ghost" className="w-full flex flex-col items-center justify-center text-sidebar-foreground h-16 px-1 group">
-              <DollarSign className="h-5 w-5 mb-1" />
-              <span className="text-xs text-sidebar-foreground/80">Billing</span>
-            </Button>
-          </Link>
-
-          <Link to={currentGym ? `/gyms/${currentGym.id}/settings` : '/gyms'} className="w-full">
-            <Button variant="ghost" className="w-full flex flex-col items-center justify-center text-sidebar-foreground h-16 px-1 group">
-              <Settings className="h-5 w-5 mb-1" />
-              <span className="text-xs text-sidebar-foreground/80">Settings</span>
-            </Button>
-          </Link>
-
-          <Link to="/help" className="w-full">
-            <Button variant="ghost" className="w-full flex flex-col items-center justify-center text-sidebar-foreground h-16 px-1 group">
-              <Users className="h-5 w-5 mb-1" />
-              <span className="text-xs text-sidebar-foreground/80">Help</span>
-            </Button>
-          </Link>
+          {[
+            { icon: BarChart3, label: 'Dashboard', path: '/dashboard' },
+            { icon: Users, label: 'Members', path: '/members' },
+            { icon: CreditCard, label: 'Billing', path: currentGym ? `/gyms/${currentGym.id}/billing` : '/gyms' },
+            { icon: TrendingUp, label: 'Marketing', path: currentGym ? `/gyms/${currentGym.id}/marketing` : '/gyms' },
+            { icon: Globe, label: 'Website', path: currentGym ? `/gyms/${currentGym.id}/website` : '/gyms' },
+            { icon: FileText, label: 'Sales', path: currentGym ? `/gyms/${currentGym.id}/sales` : '/gyms' },
+            { icon: Dumbbell, label: 'Gym', path: currentGym ? `/gyms/${currentGym.id}/gym` : '/gyms' },
+            { icon: Settings, label: 'Settings', path: currentGym ? `/gyms/${currentGym.id}/settings` : '/gyms' },
+            { icon: Building2, label: 'Front Desk', path: currentGym ? `/gyms/${currentGym.id}/front-desk` : '/gyms' },
+            { icon: HelpCircle, label: 'Help', path: '/help' }
+          ].map((it, idx) => {
+            const Icon = it.icon as any;
+            return (
+              <Link to={it.path} key={idx} className="w-full">
+                <Button variant="ghost" className="w-full flex flex-col items-center justify-center text-sidebar-foreground h-16 px-1 group">
+                  <Icon className="h-5 w-5 mb-1" />
+                  <span className="text-xs text-sidebar-foreground/80">{it.label}</span>
+                </Button>
+              </Link>
+            );
+          })}
         </div>
       </div>
 
