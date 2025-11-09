@@ -96,27 +96,29 @@ const Payroll: React.FC = () => {
 
   const markPaid = (id: string) => {
     if (!gymId) return;
+    let localId = id;
     // If this is a virtual id (not yet persisted), create one
-    if (id.startsWith('virtual-')) {
-      const userId = id.replace('virtual-', '');
+    if (localId.startsWith('virtual-')) {
+      const userId = localId.replace('virtual-', '');
       const newId = createPayrollForUser(userId);
-      if (newId) id = newId;
+      if (newId) localId = newId;
     }
     const now = new Date().toISOString();
-    gymPayrollStorage.update(gymId, id, { lastPaidDate: now, status: 'paid', lastModifiedBy: currentUser?.id || 'system', lastModifiedAt: now });
-    const entry = gymPayrollStorage.getAll(gymId).find(i => i.id === id);
+    gymPayrollStorage.update(gymId, localId, { lastPaidDate: now, status: 'paid', lastModifiedBy: currentUser?.id || 'system', lastModifiedAt: now });
+    const entry = gymPayrollStorage.getAll(gymId).find(i => i.id === localId);
     gymPaymentStorage.add(gymId, { id: `pay-${Date.now()}`, gymId, memberId: '', amount: entry?.rate || 0, currency: currentGym?.settings.currency || 'RWF', status: 'paid', dueDate: now, paidAt: now, description: `Payroll payment to ${entry?.name}`, performedBy: currentUser?.id || 'system' });
     refresh();
   };
 
   const toggleActive = (id: string, next: boolean) => {
     if (!gymId) return;
-    if (id.startsWith('virtual-')) {
-      const userId = id.replace('virtual-', '');
+    let localId = id;
+    if (localId.startsWith('virtual-')) {
+      const userId = localId.replace('virtual-', '');
       const newId = createPayrollForUser(userId);
-      if (newId) id = newId;
+      if (newId) localId = newId;
     }
-    gymPayrollStorage.update(gymId, id, { status: next ? 'active' : 'paused', lastModifiedBy: currentUser?.id || 'system', lastModifiedAt: new Date().toISOString() });
+    gymPayrollStorage.update(gymId, localId, { status: next ? 'active' : 'paused', lastModifiedBy: currentUser?.id || 'system', lastModifiedAt: new Date().toISOString() });
     refresh();
   };
 
