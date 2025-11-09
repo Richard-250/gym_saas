@@ -992,6 +992,18 @@ const EditMemberModal: React.FC<{
               </div>
             </div>
 
+            <div className="md:col-span-2">
+              <Label className="text-white">Account Status</Label>
+              <Select value={formData.accountStatus || 'active'} onValueChange={(v)=>setFormData({...formData, accountStatus: v})}>
+                <SelectTrigger className="bg-white/10 border-white/20 text-white"><SelectValue/></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="active">Active</SelectItem>
+                  <SelectItem value="inactive">Inactive</SelectItem>
+                  <SelectItem value="suspended">Suspended</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
             {formData.accountType==='family' && (
               <div className="md:col-span-2">
                 <Label className="text-white">Family Members (first is primary)</Label>
