@@ -760,132 +760,188 @@ const EditMemberModal: React.FC<{
   onClose: () => void;
   onSave: (data: any) => void;
 }> = ({ memberId, onClose, onSave }) => {
-  const [formData, setFormData] = useState({
+  const { currentGym, user } = useAuth();
+  const { showToast } = useToast();
+  const gymId = currentGym?.id || '';
+
+  const [formData, setFormData] = useState<any>({
     firstName: '',
     lastName: '',
     email: '',
     phone: '',
     dateOfBirth: '',
-    checkinCode: Math.floor(1000 + Math.random() * 9000).toString(),
-    membershipType: 'basic'
+    checkinCode: '',
+    membershipType: '2_weeks',
+    amountPaid: 0,
+    accountType: 'member',
+    familyMembers: [],
+    password: '',
+    passwordConfirm: ''
   });
+  const [codeError, setCodeError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (memberId && memberId !== 'new' && currentGym) {
+      const existing = gymMemberStorage.getById(currentGym.id, memberId);
+      if (existing) {
+        setFormData({
+          firstName: existing.name.split(' ')[0] || existing.name,
+          lastName: existing.name.split(' ').slice(1).join(' ') || '',
+          email: existing.email || '',
+          phone: existing.phone || '',
+          dateOfBirth: (existing as any).dateOfBirth || '',
+          checkinCode: (existing as any).checkinCode || '',
+          membershipType: (existing as any).membershipType || '2_weeks',
+          amountPaid: (existing as any).amountPaid || 0,
+          accountType: (existing as any).accountType || 'member',
+          familyMembers: (existing as any).familyMembers || [],
+          password: '',
+          passwordConfirm: ''
+        });
+      }
+    }
+  }, [memberId, currentGym]);
+
+  // realtime validation
+  useEffect(() => {
+    const code = formData.checkinCode || '';
+    if (code === '') { setCodeError(null); return; }
+    if (!/^[0-9]{4}$/.test(code)) { setCodeError('Code must be exactly 4 digits'); return; }
+    const existing = gymMemberStorage.getAll(gymId).find(m => (m as any).checkinCode === code && m.id !== (memberId === 'new' ? undefined : memberId));
+    if (existing) { setCodeError('This code is already used by another member in this gym'); return; }
+    setCodeError(null);
+  }, [formData.checkinCode, gymId, memberId]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    // permission check
+    const assignment = user?.gymAssignments?.find(a => a.gymId === currentGym?.id);
+    const canEdit = assignment?.permissions?.includes('edit_members') || user?.role === 'admin' || user?.role === 'owner';
+    if (!canEdit) { showToast({ type: 'error', title: 'Permission denied', message: 'You do not have permission to modify members' }); return; }
+
+    if ((formData.password || formData.passwordConfirm) && formData.password !== formData.passwordConfirm) {
+      showToast({ type: 'error', title: 'Password mismatch', message: 'Passwords do not match' });
+      return;
+    }
+    if (codeError) { showToast({ type: 'error', title: 'Invalid Check-in Code', message: codeError }); return; }
+
     onSave(formData);
   };
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-background border border-white/20 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+      <div className="bg-background border border-white/20 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto" style={{ maxWidth: '900px' }}>
         <div className="p-6 border-b border-white/20">
           <div className="flex items-center justify-between">
-            <h2 className="text-xl font-bold text-white">
-              {memberId === 'new' ? 'Add New Member' : 'Edit Member'}
-            </h2>
-            <Button variant="ghost" size="icon" onClick={onClose} className="text-white hover:bg-white/10">
-              <X className="h-4 w-4" />
-            </Button>
+            <h2 className="text-xl font-bold text-white">{memberId === 'new' ? 'Add New Member' : 'Edit Member'}</h2>
+            <Button variant="ghost" size="icon" onClick={onClose} className="text-white hover:bg-white/10"><X className="h-4 w-4" /></Button>
           </div>
         </div>
-        
+
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <Label htmlFor="firstName" className="text-white">First Name *</Label>
-              <Input
-                id="firstName"
-                value={formData.firstName}
-                onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
-                className="bg-white/10 border-white/20 text-white"
-                required
-              />
+              <Input id="firstName" value={formData.firstName} onChange={(e)=>setFormData({...formData, firstName: e.target.value})} className="bg-white/10 border-white/20 text-white" required />
             </div>
-            
             <div>
               <Label htmlFor="lastName" className="text-white">Last Name *</Label>
-              <Input
-                id="lastName"
-                value={formData.lastName}
-                onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
-                className="bg-white/10 border-white/20 text-white"
-                required
-              />
+              <Input id="lastName" value={formData.lastName} onChange={(e)=>setFormData({...formData, lastName: e.target.value})} className="bg-white/10 border-white/20 text-white" required />
             </div>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
             <div>
-              <Label htmlFor="email" className="text-white">Email Address *</Label>
-              <Input
-                id="email"
-                type="email"
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                className="bg-white/10 border-white/20 text-white"
-                required
-              />
+              <Label htmlFor="email" className="text-white">Email *</Label>
+              <Input id="email" type="email" value={formData.email} onChange={(e)=>setFormData({...formData, email: e.target.value})} className="bg-white/10 border-white/20 text-white" required />
             </div>
-            
             <div>
-              <Label htmlFor="phone" className="text-white">Phone Number</Label>
-              <Input
-                id="phone"
-                value={formData.phone}
-                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                className="bg-white/10 border-white/20 text-white"
-              />
+              <Label htmlFor="phone" className="text-white">Phone</Label>
+              <Input id="phone" value={formData.phone} onChange={(e)=>setFormData({...formData, phone: e.target.value})} className="bg-white/10 border-white/20 text-white" />
             </div>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
             <div>
               <Label htmlFor="dateOfBirth" className="text-white">Date of Birth</Label>
-              <Input
-                id="dateOfBirth"
-                type="date"
-                value={formData.dateOfBirth}
-                onChange={(e) => setFormData({ ...formData, dateOfBirth: e.target.value })}
-                className="bg-white/10 border-white/20 text-white"
-              />
+              <Input id="dateOfBirth" type="date" value={formData.dateOfBirth} onChange={(e)=>setFormData({...formData, dateOfBirth: e.target.value})} className="bg-white/10 border-white/20 text-white" />
             </div>
-            
+
             <div>
-              <Label htmlFor="checkinCode" className="text-white">Check-in Code</Label>
-              <Input
-                id="checkinCode"
-                value={formData.checkinCode}
-                onChange={(e) => setFormData({ ...formData, checkinCode: e.target.value })}
-                className="bg-white/10 border-white/20 text-white"
-                readOnly
-              />
+              <Label htmlFor="checkinCode" className="text-white">Check-in Code (4 digits)</Label>
+              <Input id="checkinCode" value={formData.checkinCode} onChange={(e)=>setFormData({...formData, checkinCode: e.target.value})} className="bg-white/10 border-white/20 text-white" />
+              {codeError && <div className="text-xs text-destructive mt-1">{codeError}</div>}
             </div>
+
+            <div>
+              <Label htmlFor="membershipType" className="text-white">Membership Type</Label>
+              <Select value={formData.membershipType} onValueChange={(v)=>setFormData({...formData, membershipType: v})}>
+                <SelectTrigger className="bg-white/10 border-white/20 text-white"><SelectValue/></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="2_weeks">2 weeks</SelectItem>
+                  {Array.from({length:12},(_,i)=>(<SelectItem key={i} value={`${i+1}_months`}>{`${i+1} month${i===0?'':'s'}`}</SelectItem>))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <Label htmlFor="amountPaid" className="text-white">Amount Paid</Label>
+              <Input id="amountPaid" type="number" value={formData.amountPaid||''} onChange={(e)=>setFormData({...formData, amountPaid: Number(e.target.value)})} className="bg-white/10 border-white/20 text-white" />
+            </div>
+
+            <div className="md:col-span-2">
+              <Label className="text-white">Account Type</Label>
+              <div className="flex items-center space-x-4 mt-2">
+                <label className="text-white"><input type="radio" name="accountType" checked={formData.accountType!=='family' && formData.accountType!=='visitor'} onChange={()=>setFormData({...formData, accountType:'member'})} /> Member</label>
+                <label className="text-white"><input type="radio" name="accountType" checked={formData.accountType==='visitor'} onChange={()=>setFormData({...formData, accountType:'visitor'})} /> Visitor</label>
+                <label className="text-white"><input type="radio" name="accountType" checked={formData.accountType==='family'} onChange={()=>setFormData({...formData, accountType:'family'})} /> Family Account</label>
+              </div>
+            </div>
+
+            {formData.accountType==='family' && (
+              <div className="md:col-span-2">
+                <Label className="text-white">Family Members (first is primary)</Label>
+                <FamilyMembersEditor initial={formData.familyMembers||[]} onChange={(list:any[])=>setFormData({...formData, familyMembers:list})} />
+              </div>
+            )}
+
+            <div className="md:col-span-2">
+              <div className="flex items-center space-x-4">
+                <div>
+                  <Label className="text-white">Password</Label>
+                  <Input type="password" value={formData.password||''} onChange={(e)=>setFormData({...formData, password: e.target.value})} className="bg-white/10 border-white/20 text-white" />
+                </div>
+                <div>
+                  <Label className="text-white">Confirm Password</Label>
+                  <Input type="password" value={formData.passwordConfirm||''} onChange={(e)=>setFormData({...formData, passwordConfirm: e.target.value})} className="bg-white/10 border-white/20 text-white" />
+                </div>
+              </div>
+            </div>
+
           </div>
-          
-          <div>
-            <Label className="text-white">Membership Type</Label>
-            <Select value={formData.membershipType} onValueChange={(value) => setFormData({ ...formData, membershipType: value })}>
-              <SelectTrigger className="bg-white/10 border-white/20 text-white">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="basic">Basic</SelectItem>
-                <SelectItem value="premium">Premium</SelectItem>
-                <SelectItem value="unlimited">Unlimited</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          
-          <div className="flex space-x-4 pt-4">
-            <Button type="submit" className="bg-primary hover:bg-primary/80">
-              {memberId === 'new' ? 'Add Member' : 'Update Member'}
-            </Button>
-            <Button type="button" variant="outline" onClick={onClose} className="border-white/20 text-white hover:bg-white/10">
-              Cancel
-            </Button>
+
+          <div className="flex items-center justify-end space-x-2">
+            <Button variant="outline" onClick={onClose}>Cancel</Button>
+            <Button type="submit" className="bg-primary">Save Member</Button>
           </div>
         </form>
       </div>
+    </div>
+  );
+};
+
+const FamilyMembersEditor: React.FC<{ initial: any[]; onChange: (list:any[]) => void }> = ({ initial, onChange }) => {
+  const [list, setList] = useState<any[]>(initial && initial.length? initial : [{ firstName: '', lastName: '', email: '' }]);
+
+  useEffect(() => onChange(list), [list]);
+
+  return (
+    <div className="space-y-2">
+      {list.map((item, idx) => (
+        <div key={idx} className="flex items-center space-x-2">
+          <Input placeholder="First name" value={item.firstName} onChange={(e) => { const newList = [...list]; newList[idx].firstName = e.target.value; setList(newList); }} className="bg-white/10" />
+          <Input placeholder="Last name" value={item.lastName} onChange={(e) => { const newList = [...list]; newList[idx].lastName = e.target.value; setList(newList); }} className="bg-white/10" />
+          <Input placeholder="Email (optional)" value={item.email} onChange={(e) => { const newList = [...list]; newList[idx].email = e.target.value; setList(newList); }} className="bg-white/10" />
+          <Button variant="destructive" onClick={() => { setList(list.filter((_, i) => i !== idx)); }}>Remove</Button>
+        </div>
+      ))}
+      <Button onClick={() => setList([...list, { firstName: '', lastName: '', email: '' }])}>Add Family Member</Button>
     </div>
   );
 };
