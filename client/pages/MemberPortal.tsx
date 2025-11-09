@@ -74,44 +74,60 @@ export const MemberPortal: React.FC = () => {
     const memberLoginData = localStorage.getItem('member_login');
     if (memberLoginData) {
       const loginData = JSON.parse(memberLoginData);
-      
-      // Sample member data based on the provided image
-      const sampleMemberData: MemberData = {
-        id: loginData.memberId,
-        name: 'CYUBAHIRO Richard',
-        email: 'cyubahirorichard250@gmail.com',
-        phone: '(079) 252-5910',
-        avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face',
-        memberSince: '06/06/2025',
-        checkinCode: '2222',
-        status: 'Active',
-        membershipType: 'Monthly recurring - Unlimited',
-        balance: 400,
-        nextPayment: '13/07/2025',
-        personalDetails: {
-          birthday: 'Jun 7, 2000 (25 Years old)',
-          gender: 'Male',
-          address: '123 Fitness Street, City'
-        },
-        programs: [
-          'Taekwondo - White',
-          'Judo - White Belt',
-          'Rhythmic Gymnastics - Children/Recreation',
-          'Gymnastics [1-3] Girl\'s',
-          'Rhythmic [1-3] Level 1'
-        ],
-        attendanceData: [
-          { day: 'Mon', count: 5 },
-          { day: 'Tue', count: 8 },
-          { day: 'Wed', count: 3 },
-          { day: 'Thu', count: 12 },
-          { day: 'Fri', count: 7 },
-          { day: 'Sat', count: 9 },
-          { day: 'Sun', count: 4 }
-        ]
-      };
-      
-      setMemberData(sampleMemberData);
+      const memberId = loginData.memberId;
+      const gymId = loginData.gymId;
+
+      // Try to load real member from gym storage
+      try {
+        const all = (window as any).__GYM_MEMBER_STORAGE__;
+      } catch(e) {}
+      import('@/lib/gym-storage').then(mod => {
+        const gymMemberStorage = (mod as any).gymMemberStorage;
+        const gymMembers = gymMemberStorage.getAll(gymId || '');
+        const found = gymMembers.find((m:any) => m.id === memberId);
+        if (found) {
+          const memberDataFromStorage: MemberData = {
+            id: found.id,
+            name: found.name,
+            email: found.email,
+            phone: found.phone || '',
+            avatar: undefined,
+            memberSince: found.startDate || new Date().toLocaleDateString(),
+            checkinCode: `${Math.floor(1000 + Math.random() * 9000)}`,
+            status: found.status === 'active' ? 'Active' : 'Inactive',
+            membershipType: found.membershipType || 'Standard',
+            balance: 0,
+            nextPayment: found.startDate || new Date().toLocaleDateString(),
+            personalDetails: {
+              birthday: '',
+              gender: '',
+              address: ''
+            },
+            programs: [],
+            attendanceData: []
+          };
+          setMemberData(memberDataFromStorage);
+        } else {
+          // fallback to sample member if not found
+          const sampleMemberData: MemberData = {
+            id: memberId,
+            name: loginData.email || 'Member',
+            email: loginData.email || '',
+            phone: '',
+            avatar: undefined,
+            memberSince: new Date().toLocaleDateString(),
+            checkinCode: `${Math.floor(1000 + Math.random() * 9000)}`,
+            status: 'Active',
+            membershipType: 'Monthly recurring - Unlimited',
+            balance: 0,
+            nextPayment: new Date().toLocaleDateString(),
+            personalDetails: { birthday: '', gender: '', address: '' },
+            programs: [],
+            attendanceData: []
+          };
+          setMemberData(sampleMemberData);
+        }
+      });
     } else {
       navigate('/login');
     }
