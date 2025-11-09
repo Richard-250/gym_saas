@@ -280,7 +280,7 @@ export const Members: React.FC = () => {
       </div>
 
       {/* Header */}
-      <div className="border-b border-white/20 bg-white/5 backdrop-blur-sm p-6" style={{ marginLeft: '85px' }}>
+      <div className="border-b border-white/20 bg-white/5 backdrop-blur-sm p-6 lg:ml-[85px]">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
             <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
