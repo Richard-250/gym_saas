@@ -353,7 +353,15 @@ export const Members: React.FC = () => {
           <div className="flex items-center space-x-2">
             <Button
               className="bg-primary hover:bg-primary/80"
-              onClick={() => setShowEditMember('new')}
+              onClick={() => {
+                const assignment = user?.gymAssignments?.find(a => a.gymId === currentGym?.id);
+                const canEdit = assignment?.permissions?.includes('edit_members') || user?.role === 'admin' || user?.role === 'owner';
+                if (!canEdit) {
+                  showToast({ type: 'error', title: 'Permission denied', message: 'You do not have permission to add members' });
+                  return;
+                }
+                setShowEditMember('new');
+              }}
             >
               <Plus className="h-4 w-4 mr-2" />
               ADD MEMBER
