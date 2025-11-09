@@ -1027,6 +1027,18 @@ const EditMemberModal: React.FC<{
           </div>
 
           <div className="flex items-center justify-end space-x-2">
+            {memberId !== 'new' && (
+              <Button variant="destructive" onClick={() => {
+                const assignment = user?.gymAssignments?.find(a => a.gymId === currentGym?.id);
+                const canDelete = assignment?.permissions?.includes('edit_members') || user?.role === 'admin' || user?.role === 'owner';
+                if (!canDelete) { showToast({ type: 'error', title: 'Permission denied', message: 'You do not have permission to delete members' }); return; }
+                const typed = prompt('Type DELETE to permanently remove this member from this gym');
+                if (typed !== 'DELETE') { showToast({ type: 'warning', title: 'Aborted', message: 'Deletion cancelled' }); return; }
+                // signal parent to delete
+                onSave({ _deleted: true, id: memberId });
+                onClose();
+              }}>Delete</Button>
+            )}
             <Button variant="outline" onClick={onClose}>Cancel</Button>
             <Button type="submit" className="bg-primary">Save Member</Button>
           </div>
