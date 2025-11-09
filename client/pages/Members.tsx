@@ -750,9 +750,10 @@ export const Members: React.FC = () => {
                     phone: fm.phone || '',
                     membershipType: memberData.membershipType,
                     startDate: new Date().toISOString(),
-                    status: 'active',
+                    status: memberData.accountStatus || 'active',
                     checkinCode: idx === 0 ? memberData.checkinCode : `${Math.floor(1000 + Math.random() * 9000)}`,
                     amountPaid: idx === 0 ? (memberData.amountPaid || 0) : 0,
+                    amountStatus: memberData.amountStatus || 'paid',
                     accountType: 'family',
                     familyPrimaryId: undefined,
                     password: memberData.password || ''
