@@ -96,11 +96,12 @@ export const Members: React.FC = () => {
     let filtered = members.filter(member => {
       const matchesSearch = member.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                            member.email.toLowerCase().includes(searchQuery.toLowerCase());
-      
+
       const matchesStatus = statusFilter === 'all' || member.status === statusFilter;
       const matchesMembership = membershipFilter === 'all' || member.membershipType.includes(membershipFilter);
-      
-      return matchesSearch && matchesStatus && matchesMembership;
+      const matchesAccountType = accountTypeFilter === 'all' || (member as any).accountType === accountTypeFilter;
+
+      return matchesSearch && matchesStatus && matchesMembership && matchesAccountType;
     });
 
     // Sort
