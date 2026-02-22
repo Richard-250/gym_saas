@@ -5,7 +5,7 @@ export interface User {
   email: string;
   name: string;
   role: UserRole;
-  avatar?: string;
+  profile?: string;
   createdAt: string;
   gymAssignments: GymAssignment[];
 }
@@ -14,8 +14,10 @@ export interface GymAssignment {
   gymId: string;
   role: UserRole;
   permissions: string[];
-  // paid indicates whether the user has an active paid relationship with this gym
+  /** paid indicates whether the user has an active paid relationship with this gym */
   paid?: boolean;
+  /** Optional: user id who added this assignment */
+  addedBy?: string;
 }
 
 export interface Gym {
@@ -30,7 +32,19 @@ export interface Gym {
   updatedAt: string;
 }
 
+/** Standard address hierarchy (e.g. country → region → district → sector → cell → village) */
+export interface GymAddress {
+  country: string;
+  region?: string;
+  district?: string;
+  sector?: string;
+  cell?: string;
+  village?: string;
+  addressLine?: string;
+}
+
 export interface GymSettings {
+  location: GymAddress;
   timezone: string;
   currency: string;
   address: string;
@@ -53,7 +67,7 @@ export interface OpeningHours {
 export interface Subscription {
   id: string;
   planType: 'trial' | 'basic' | 'premium' | 'enterprise';
-  status: 'active' | 'expired' | 'canceled';
+  status: 'active' | 'expired' | 'canceled' | 'inactive';
   trialEndsAt?: string;
   currentPeriodEnd: string;
   daysLeft: number;
@@ -65,12 +79,16 @@ export interface Member {
   name: string;
   email: string;
   phone: string;
-  avatar?: string;
+  profile?: string;
   membershipType: string;
   startDate: string;
   endDate?: string;
   status: 'active' | 'inactive' | 'suspended';
   lastCheckin?: string;
+  ranking?: string;
+  /** Optional app-specific fields stored in gym member data */
+  lastRankUpdate?: string;
+  familyPrimaryId?: string;
 }
 
 export interface Session {
@@ -97,6 +115,8 @@ export interface Payment {
   dueDate: string;
   paidAt?: string;
   description: string;
+  /** Optional: who recorded the payment (e.g. payroll) */
+  performedBy?: string;
 }
 
 export interface Task {

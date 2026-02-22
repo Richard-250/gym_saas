@@ -61,10 +61,17 @@ import { GymSetup } from "./pages/GymSetup";
 import { Members } from "./pages/Members";
 import { MemberPortal } from "./pages/MemberPortal";
 import Staff from "./pages/Staff";
-import Payroll from "./pages/Payroll";
-import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import { Loader2 } from "lucide-react";
+
+// Import new pages
+import Billing from "./pages/Billing";
+import { Marketing } from "./pages/Marketing";
+import { Website } from "./pages/Website";
+import { Sales } from "./pages/Sales";
+import { Setting } from "./pages/Settings";
+import { FrontDesk } from "./pages/FrontDesk";
+import { Help } from "./pages/Help";
 
 const queryClient = new QueryClient();
 
@@ -74,7 +81,7 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
@@ -89,7 +96,7 @@ const PublicRoute = ({ children }: { children: React.ReactNode }) => {
   
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
@@ -134,20 +141,60 @@ function AppRoutes() {
         </ProtectedRoute>
       } />
 
+      {/* New Sidebar Pages */}
+      <Route path="/billing" element={
+        <ProtectedRoute>
+          <Billing />
+        </ProtectedRoute>
+      } />
+ 
+      <Route path="/marketing" element={
+        <ProtectedRoute>
+          <Marketing />
+        </ProtectedRoute>
+      } />
+
+      <Route path="/website" element={
+        <ProtectedRoute>
+          <Website />
+        </ProtectedRoute>
+      } />
+
+      <Route path="/sales" element={
+        <ProtectedRoute>
+          <Sales />
+        </ProtectedRoute>
+      } />
+
+   
+
+      <Route path="/settings" element={
+        <ProtectedRoute>
+          <Setting />
+        </ProtectedRoute>
+      } />
+
+      <Route path="/front-desk" element={
+        <ProtectedRoute>
+          <FrontDesk />
+        </ProtectedRoute>
+      } />
+
+      <Route path="/help" element={
+        <ProtectedRoute>
+          <Help />
+        </ProtectedRoute>
+      } /> 
+
       <Route path="/member-portal" element={<MemberPortal />} />
       <Route path="/gyms/:gymId/staff" element={
         <ProtectedRoute>
           <Staff />
         </ProtectedRoute>
       } />
-      <Route path="/gyms/:gymId/payroll" element={
-        <ProtectedRoute>
-          <Payroll />
-        </ProtectedRoute>
-      } />
 
       {/* Default redirect */}
-      <Route path="/" element={<Navigate to="/gyms" replace />} />
+      <Route path="/" element={<Navigate to="/dashboard" replace />} />
       
       {/* 404 Route */}
       <Route path="*" element={<NotFound />} />

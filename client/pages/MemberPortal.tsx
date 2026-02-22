@@ -93,7 +93,7 @@ export const MemberPortal: React.FC = () => {
             phone: found.phone || '',
             avatar: undefined,
             memberSince: found.startDate || new Date().toLocaleDateString(),
-            checkinCode: `${Math.floor(1000 + Math.random() * 9000)}`,
+            checkinCode: found.checkin,
             status: found.status === 'active' ? 'Active' : 'Inactive',
             membershipType: found.membershipType || 'Standard',
             balance: 0,

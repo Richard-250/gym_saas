@@ -39,6 +39,23 @@ interface AuthProviderProps {
   children: ReactNode;
 }
 
+// Staff storage helper
+const staffStorage = {
+  getAll: (gymId: string) => JSON.parse(localStorage.getItem(`gym_staff_${gymId}`) || '[]'),
+  findByEmail: (email: string) => {
+    // Search through all gyms for staff with matching email
+    const gyms = gymStorage.getAll();
+    for (const gym of gyms) {
+      const staffMembers = JSON.parse(localStorage.getItem(`gym_staff_${gym.id}`) || '[]');
+      const staff = staffMembers.find((s: any) => s.email === email && s.active !== false);
+      if (staff) {
+        return { staff, gym };
+      }
+    }
+    return null;
+  }
+};
+
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [currentGym, setCurrentGymState] = useState<Gym | null>(null);
@@ -71,7 +88,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             email: 'admin@gymsaas.test',
             name: 'System Admin',
             role: 'admin' as any,
-            avatar: undefined,
+            profile: undefined,
             createdAt: new Date().toISOString(),
             gymAssignments: []
           },
@@ -91,9 +108,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       if (storedUser) {
         setUser(storedUser);
 
-        accessibleGyms = storedGyms.filter(gym =>
+        // Check if user is a staff member in any gym
+        const staffGyms = getStaffGymsForUser(storedUser.email);
+        const userAssignmentGyms = storedGyms.filter(gym =>
           storedUser!.gymAssignments.some(assignment => assignment.gymId === gym.id)
         );
+        
+        // Combine both staff gyms and user assignment gyms
+        accessibleGyms = [...new Map([...staffGyms, ...userAssignmentGyms].map(gym => [gym.id, gym])).values()];
         setUserGyms(accessibleGyms);
       } else {
         setUser(null);
@@ -121,6 +143,44 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
+  // Helper function to get gyms where user is a staff member
+  const getStaffGymsForUser = (email: string): Gym[] => {
+    const storedGyms = gymStorage.getAll();
+    const staffGyms: Gym[] = [];
+    
+    for (const gym of storedGyms) {
+      const staffMembers = staffStorage.getAll(gym.id);
+      const staffMember = staffMembers.find((s: any) => 
+        s.email === email && s.active !== false
+      );
+      if (staffMember) {
+        staffGyms.push(gym);
+      }
+    }
+    
+    return staffGyms;
+  };
+
+  // Helper function to create a user object from staff data
+  const createUserFromStaff = (staff: any, gym: Gym): User => {
+    return {
+      id: staff.id,
+      name: staff.name,
+      email: staff.email,
+      role: 'staff' as any,
+      profile: typeof staff.profile === 'string' ? staff.profile : undefined,
+      createdAt: staff.createdAt || new Date().toISOString(),
+      gymAssignments: [
+        {
+          gymId: gym.id,
+          role: staff.role,
+          permissions: staff.permissions || [],
+          paid: true
+        }
+      ]
+    };
+  };
+
   const login = async (email: string, password: string): Promise<boolean> => {
     setIsLoading(true);
     try {
@@ -133,45 +193,79 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         gymStorage.set(storedGyms);
       }
 
-      // Find user from usersStorage
-      const stored = usersStorage.findByEmail(email);
-      if (!stored) {
-        return false;
-      }
-
-      // Password check (demo only)
-      if (stored.password && stored.password !== password) {
-        return false;
-      }
-
-      // Set current user
-      userStorage.set(stored.user);
-      setUser(stored.user);
-
-      // Admin role: can access all gyms
-      if ((stored.user as any).role === 'admin') {
-        setUserGyms(storedGyms);
-        if (storedGyms.length > 0) {
-          setCurrentGymState(storedGyms[0]);
-          currentGymStorage.set(storedGyms[0].id);
+      // First, try to find user in usersStorage (owners/admins)
+      const storedUser = usersStorage.findByEmail(email);
+      if (storedUser) {
+        // Password check for regular users
+        if (storedUser.password && storedUser.password !== password) {
+          return false;
         }
-      } else {
-        const accessibleGyms = storedGyms.filter(gym =>
-          stored.user.gymAssignments?.some((assignment: any) => assignment.gymId === gym.id) ||
-          gym.ownerId === stored.user.id
-        );
-        setUserGyms(accessibleGyms);
-        // If user has access to exactly one gym, set it. If multiple, allow the user to choose on the /gyms page.
-        if (accessibleGyms.length === 1) {
-          setCurrentGymState(accessibleGyms[0]);
-          currentGymStorage.set(accessibleGyms[0].id);
+
+        // Set current user
+        userStorage.set(storedUser.user);
+        setUser(storedUser.user);
+
+        // Admin role: can access all gyms
+        if ((storedUser.user as any).role === 'admin') {
+          setUserGyms(storedGyms);
+          if (storedGyms.length > 0) {
+            setCurrentGymState(storedGyms[0]);
+            currentGymStorage.set(storedGyms[0].id);
+          }
         } else {
-          setCurrentGymState(null);
-          currentGymStorage.remove();
+          // For owners/regular users, get gyms from assignments and staff roles
+          const staffGyms = getStaffGymsForUser(email);
+          const userAssignmentGyms = storedGyms.filter(gym =>
+            storedUser.user.gymAssignments?.some((assignment: any) => assignment.gymId === gym.id) ||
+            gym.ownerId === storedUser.user.id
+          );
+          
+          const accessibleGyms = [...new Map([...staffGyms, ...userAssignmentGyms].map(gym => [gym.id, gym])).values()];
+          setUserGyms(accessibleGyms);
+          
+          // If user has access to exactly one gym, set it. If multiple, allow the user to choose on the /gyms page.
+          if (accessibleGyms.length === 1) {
+            setCurrentGymState(accessibleGyms[0]);
+            currentGymStorage.set(accessibleGyms[0].id);
+          } else {
+            setCurrentGymState(null);
+            currentGymStorage.remove();
+          }
         }
+
+        return true;
       }
 
-      return true;
+      // If not found in usersStorage, check staff members across all gyms
+      const staffResult = staffStorage.findByEmail(email);
+      if (staffResult) {
+        const { staff, gym } = staffResult;
+        
+        // Check staff password (in a real app, this would be properly hashed)
+        if (staff.password && staff.password !== password) {
+          return false;
+        }
+
+        // Create user object from staff data
+        const staffUser = createUserFromStaff(staff, gym);
+        
+        // Set current user
+        userStorage.set(staffUser);
+        setUser(staffUser);
+
+        // Staff members can only access their assigned gym
+        const accessibleGyms = [gym];
+        setUserGyms(accessibleGyms);
+        
+        // Auto-set the current gym for staff
+        setCurrentGymState(gym);
+        currentGymStorage.set(gym.id);
+
+        return true;
+      }
+
+      // No user found
+      return false;
     } catch (error) {
       console.error('Login error:', error);
       return false;
@@ -186,10 +280,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       await new Promise(resolve => setTimeout(resolve, 600));
 
-      // Check if email already registered
-      const existing = usersStorage.findByEmail(email);
-      if (existing) {
+      // Check if email already registered in usersStorage or staff
+      const existingUser = usersStorage.findByEmail(email);
+      if (existingUser) {
         return { success: false, message: 'A user with that email already exists.' };
+      }
+
+      // Check if email exists as staff member
+      const existingStaff = staffStorage.findByEmail(email);
+      if (existingStaff) {
+        return { success: false, message: 'This email is already registered as a staff member. Please contact your gym administrator for login instructions.' };
       }
 
       const id = `user-${Date.now()}`;
@@ -198,7 +298,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         name,
         email,
         role: 'owner',
-        avatar: undefined,
+        profile: undefined,
         createdAt: new Date().toISOString(),
         gymAssignments: []
       };
@@ -241,10 +341,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const storedGyms = gymStorage.getAll();
     const user = userStorage.get();
     if (user) {
-      const accessibleGyms = storedGyms.filter(gym =>
+      // Get gyms from both user assignments and staff roles
+      const staffGyms = getStaffGymsForUser(user.email);
+      const userAssignmentGyms = storedGyms.filter(gym =>
         user.gymAssignments.some(assignment => assignment.gymId === gym.id) ||
-        gym.ownerId === user.id // Also include gyms owned by the user
+        gym.ownerId === user.id
       );
+      
+      const accessibleGyms = [...new Map([...staffGyms, ...userAssignmentGyms].map(gym => [gym.id, gym])).values()];
       setUserGyms(accessibleGyms);
     }
   };

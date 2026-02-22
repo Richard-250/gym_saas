@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Checkbox } from '@/components/ui/checkbox';
 import { Loader2, ArrowLeft, ArrowRight } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
+import { LayoutWithSidebar } from '@/components/ui/LayoutWithSidebar';
 import { gymStorage, userStorage } from '@/lib/storage';
 import { Gym } from '@shared/types';
 
@@ -29,6 +30,7 @@ export const GymSetup: React.FC = () => {
   const [district, setDistrict] = useState('');
   const [sector, setSector] = useState('');
   const [cell, setCell] = useState('');
+  const [village, setVillage] = useState('');
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
   const [timezone, setTimezone] = useState('Africa/Kigali');
@@ -36,16 +38,20 @@ export const GymSetup: React.FC = () => {
   const [features, setFeatures] = useState<string[]>([]);
 
   const availableFeatures = [
+    'Aeorobics',
+    'Boxing',
+    'Circuit Training',
+    'CrossFit',
+    'Judo',
     'Personal Training',
-    'Group Classes',
-    'Swimming Pool',
-    'Sauna',
-    'Steam Room',
-    'Massage Therapy',
-    'Nutrition Counseling',
-    'Childcare',
-    'Locker Rooms',
-    'Equipment Rental'
+    'Spin',
+    'TRX',
+    'Weight Training',
+    'Pilates',
+    'Strength & Conditioning',
+    'Taekondo',
+    'Adult Gymnastics',
+    'Rhythmic Gymnastics',
   ];
 
   const handleFeatureChange = (feature: string, checked: boolean) => {
@@ -63,7 +69,7 @@ export const GymSetup: React.FC = () => {
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 2000));
       
-      const fullAddress = [addressLine, sector, cell, district, province, country].filter(Boolean).join(', ');
+      const fullAddress = [addressLine, village, cell, sector, district, province, country].filter(Boolean).join(', ');
 
       const newGym: Gym = {
         id: `gym-${Date.now()}`,
@@ -76,10 +82,11 @@ export const GymSetup: React.FC = () => {
           address: fullAddress,
           location: {
             country,
-            province,
+            region: province,
             district,
             sector,
             cell,
+            village,
             addressLine
           },
           phone,
@@ -211,6 +218,16 @@ export const GymSetup: React.FC = () => {
               </div>
               <div className="grid grid-cols-2 gap-2">
                 <div className="space-y-2">
+                  <Label htmlFor="district" className="text-white">District</Label>
+                  <Input id="district" placeholder="District" value={district} onChange={(e) => setDistrict(e.target.value)} className="bg-white/10 border-white/20 text-white placeholder:text-white/50" />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="province" className="text-white">Province / Region</Label>
+                  <Input id="province" placeholder="Province or Region" value={province} onChange={(e) => setProvince(e.target.value)} className="bg-white/10 border-white/20 text-white placeholder:text-white/50" />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <div className="space-y-2">
                   <Label htmlFor="sector" className="text-white">Sector</Label>
                   <Input id="sector" placeholder="Sector" value={sector} onChange={(e) => setSector(e.target.value)} className="bg-white/10 border-white/20 text-white placeholder:text-white/50" />
                 </div>
@@ -219,15 +236,9 @@ export const GymSetup: React.FC = () => {
                   <Input id="cell" placeholder="Cell" value={cell} onChange={(e) => setCell(e.target.value)} className="bg-white/10 border-white/20 text-white placeholder:text-white/50" />
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-2">
-                <div className="space-y-2">
-                  <Label htmlFor="district" className="text-white">District</Label>
-                  <Input id="district" placeholder="District" value={district} onChange={(e) => setDistrict(e.target.value)} className="bg-white/10 border-white/20 text-white placeholder:text-white/50" />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="province" className="text-white">Province</Label>
-                  <Input id="province" placeholder="Province" value={province} onChange={(e) => setProvince(e.target.value)} className="bg-white/10 border-white/20 text-white placeholder:text-white/50" />
-                </div>
+              <div className="space-y-2">
+                <Label htmlFor="village" className="text-white">Village</Label>
+                <Input id="village" placeholder="Village" value={village} onChange={(e) => setVillage(e.target.value)} className="bg-white/10 border-white/20 text-white placeholder:text-white/50" />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="country" className="text-white">Country</Label>
@@ -276,7 +287,7 @@ export const GymSetup: React.FC = () => {
                       <SelectValue placeholder="Select timezone" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="UTC">UTC</SelectItem>
+                      <SelectItem value="Africa/Kigali">GMT+2 (Rwanda)</SelectItem>
                       <SelectItem value="America/New_York">Eastern Time</SelectItem>
                       <SelectItem value="America/Chicago">Central Time</SelectItem>
                       <SelectItem value="America/Denver">Mountain Time</SelectItem>
@@ -292,7 +303,7 @@ export const GymSetup: React.FC = () => {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="USD">USD ($)</SelectItem>
-                      <SelectItem value="EUR">EUR (€)</SelectItem>
+                      <SelectItem value="RWF">RWF (Frw)</SelectItem>
                       <SelectItem value="GBP">GBP (£)</SelectItem>
                       <SelectItem value="CAD">CAD (C$)</SelectItem>
                     </SelectContent>
@@ -302,9 +313,9 @@ export const GymSetup: React.FC = () => {
               
               <div className="space-y-3">
                 <Label className="text-white">Available Features</Label>
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-2 gap-3 cursor-pointer">
                   {availableFeatures.map((feature) => (
-                    <div key={feature} className="flex items-center space-x-2">
+                    <div key={feature} className="flex items-center space-x-2 cursor-pointer">
                       <Checkbox
                         id={feature}
                         checked={features.includes(feature)}
@@ -328,7 +339,7 @@ export const GymSetup: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background p-6">
+    <LayoutWithSidebar>
       <div className="max-w-2xl mx-auto">
         {/* Header */}
         <div className="mb-8">
@@ -389,6 +400,6 @@ export const GymSetup: React.FC = () => {
           )}
         </div>
       </div>
-    </div>
+    </LayoutWithSidebar>
   );
 };

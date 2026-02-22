@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -9,6 +9,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Textarea } from '@/components/ui/textarea';
+import { MemberCardModal } from '@/components/ui/MemberCardModal';
+import { CheckIn } from '@/components/check-in/CheckIn';
 import {
   Search,
   Filter,
@@ -38,26 +41,43 @@ import {
   Globe,
   Dumbbell,
   Building2,
-  HelpCircle
+  HelpCircle,
+  Mail,
+  Star,
+  Crown,
+  Trophy,
+  Award,
+  Zap,
+  Target,
+  IdCard
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
+import { LayoutWithSidebar } from '@/components/ui/LayoutWithSidebar';
 import { gymStorage } from '@/lib/storage';
 import { gymMemberStorage, initializeGymData } from '@/lib/gym-storage';
 import { Member } from '@shared/types';
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
 
 interface MemberWithCheckIn extends Member {
   checkinCode: string;
   age: number;
   billingStatus: 'paid' | 'overdue' | 'pending';
+  accountType: 'member' | 'visitor' | 'family';
+  ranking?: string;
+  attendanceCount?: number;
+  performanceScore?: number;
+  lastRankUpdate?: string;
 }
 
-type SortField = 'name' | 'age' | 'lastCheckin' | 'startDate';
+type SortField = 'name' | 'age' | 'lastCheckin' | 'startDate' | 'ranking' | 'attendanceCount';
 type SortOrder = 'asc' | 'desc';
 
 export const Members: React.FC = () => {
   const { user, currentGym } = useAuth();
   const { showToast } = useToast();
   const navigate = useNavigate();
+  const tableRef = useRef<HTMLDivElement>(null);
   
   const [members, setMembers] = useState<MemberWithCheckIn[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -69,45 +89,63 @@ export const Members: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [showEditMember, setShowEditMember] = useState<string | null>(null);
+  const [showInviteModal, setShowInviteModal] = useState(false);
+  const [showBulkActions, setShowBulkActions] = useState(false);
+  const [showMessageModal, setShowMessageModal] = useState(false);
+  const [showStatusModal, setShowStatusModal] = useState(false);
+  const [showMemberCardModal, setShowMemberCardModal] = useState<string | null>(null);
+  const [selectedMemberForCard, setSelectedMemberForCard] = useState<MemberWithCheckIn | null>(null);
   
   // Filter states
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [membershipFilter, setMembershipFilter] = useState<string>('all');
   const [dateRangeFilter, setDateRangeFilter] = useState<string>('all');
   const [accountTypeFilter, setAccountTypeFilter] = useState<string>('all');
+  const [rankingFilter, setRankingFilter] = useState<string>('all');
+
+  // Modal states
+  const [inviteEmail, setInviteEmail] = useState('');
+  const [bulkMessage, setBulkMessage] = useState('');
+  const [selectedStatus, setSelectedStatus] = useState<'active' | 'inactive' | 'suspended'>('active');
 
   // Load gym-specific members data
   useEffect(() => {
     if (currentGym) {
-      // Initialize gym data if needed
       initializeGymData(currentGym.id);
-
-      // Get members from gym-specific storage
       const gymMembers = gymMemberStorage.getAll(currentGym.id);
 
-      // Convert to MemberWithCheckIn format with additional data
-      const membersWithCheckIn: MemberWithCheckIn[] = gymMembers.map((member, index) => ({
-        ...member,
-        checkinCode: `${2000 + index}${member.id.slice(-2)}`,
-        age: Math.floor(Math.random() * 30) + 20, // Random age between 20-50
-        billingStatus: ['paid', 'overdue', 'pending'][Math.floor(Math.random() * 3)] as 'paid' | 'overdue' | 'pending'
-      }));
+      const membersWithCheckIn: MemberWithCheckIn[] = gymMembers.map((member, index) => {
+        const baseMember = member as any;
+        return {
+          ...member,
+          checkinCode: baseMember.checkinCode || `${2000 + index}${member.id.slice(-2)}`,
+          age: baseMember.age || Math.floor(Math.random() * 30) + 20,
+          billingStatus: baseMember.billingStatus || (['paid', 'overdue', 'pending'][Math.floor(Math.random() * 3)] as 'paid' | 'overdue' | 'pending'),
+          accountType: baseMember.accountType || 'member',
+          ranking: baseMember.ranking || 'Bronze',
+          attendanceCount: baseMember.attendanceCount || Math.floor(Math.random() * 100),
+          performanceScore: baseMember.performanceScore || Math.floor(Math.random() * 100),
+          lastRankUpdate: baseMember.lastRankUpdate || new Date().toISOString()
+        };
+      });
 
       setMembers(membersWithCheckIn);
     }
   }, [currentGym]);
 
-  // Sorting and filtering logic
+  // Enhanced filtering and sorting
   const filteredAndSortedMembers = useMemo(() => {
     let filtered = members.filter(member => {
       const matchesSearch = member.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                           member.email.toLowerCase().includes(searchQuery.toLowerCase());
+                           member.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                           (member as any).phone?.toLowerCase().includes(searchQuery.toLowerCase());
 
       const matchesStatus = statusFilter === 'all' || member.status === statusFilter;
       const matchesMembership = membershipFilter === 'all' || member.membershipType.includes(membershipFilter);
-      const matchesAccountType = accountTypeFilter === 'all' || (member as any).accountType === accountTypeFilter;
+      const matchesAccountType = accountTypeFilter === 'all' || member.accountType === accountTypeFilter;
+      const matchesRanking = rankingFilter === 'all' || member.ranking === rankingFilter;
 
-      return matchesSearch && matchesStatus && matchesMembership && matchesAccountType;
+      return matchesSearch && matchesStatus && matchesMembership && matchesAccountType && matchesRanking;
     });
 
     // Sort
@@ -132,6 +170,15 @@ export const Members: React.FC = () => {
           aValue = new Date(a.startDate).getTime();
           bValue = new Date(b.startDate).getTime();
           break;
+        case 'ranking':
+          const rankOrder = { 'Platinum': 5, 'Gold': 4, 'Silver': 3, 'Bronze': 2, 'New': 1 };
+          aValue = rankOrder[a.ranking as keyof typeof rankOrder] || 0;
+          bValue = rankOrder[b.ranking as keyof typeof rankOrder] || 0;
+          break;
+        case 'attendanceCount':
+          aValue = a.attendanceCount || 0;
+          bValue = b.attendanceCount || 0;
+          break;
         default:
           aValue = a.name.toLowerCase();
           bValue = b.name.toLowerCase();
@@ -143,7 +190,7 @@ export const Members: React.FC = () => {
     });
 
     return filtered;
-  }, [members, searchQuery, sortField, sortOrder, statusFilter, membershipFilter]);
+  }, [members, searchQuery, sortField, sortOrder, statusFilter, membershipFilter, accountTypeFilter, rankingFilter]);
 
   // Pagination
   const totalPages = Math.ceil(filteredAndSortedMembers.length / itemsPerPage);
@@ -177,26 +224,316 @@ export const Members: React.FC = () => {
     }
   };
 
+  // Enhanced bulk actions
   const handleBulkAction = (action: string) => {
-    showToast({
-      type: 'success',
-      title: 'Action Applied',
-      message: `${action} applied to ${selectedMembers.length} members`
-    });
-    setSelectedMembers([]);
-    setShowActions(false);
+    switch (action) {
+      case 'send_message':
+        setShowMessageModal(true);
+        break;
+      case 'change_status':
+        setShowStatusModal(true);
+        break;
+      case 'export_selected':
+        handleExportSelected('csv');
+        break;
+      case 'update_ranking':
+        updateBulkRanking();
+        break;
+      case 'generate_cards':
+        handleGenerateMemberCards();
+        break;
+      default:
+        showToast({
+          type: 'success',
+          title: 'Action Applied',
+          message: `${action} applied to ${selectedMembers.length} members`
+        });
+    }
+    setShowBulkActions(false);
   };
 
-  const handleExport = (format: 'csv' | 'pdf') => {
+  // Generate member cards for selected members
+  const handleGenerateMemberCards = () => {
+    if (selectedMembers.length === 0) {
+      showToast({
+        type: 'error',
+        title: 'No Members Selected',
+        message: 'Please select members to generate cards'
+      });
+      return;
+    }
+
+    if (selectedMembers.length === 1) {
+      // Show single member card
+      const member = members.find(m => m.id === selectedMembers[0]);
+      if (member) {
+        setSelectedMemberForCard(member);
+        setShowMemberCardModal(member.id);
+      }
+    } else {
+      // Generate PDF with multiple cards
+      generateBulkMemberCardsPDF();
+    }
+  };
+
+  // Generate PDF with multiple member cards
+  const generateBulkMemberCardsPDF = async () => {
+    const selectedMembersData = members.filter(member => selectedMembers.includes(member.id));
+    const pdf = new jsPDF('landscape', 'mm', 'a4');
+    
+    const cardWidth = 85;
+    const cardHeight = 54;
+    const margin = 10;
+    const cardsPerRow = 3;
+    const cardsPerPage = 6;
+    
+    let currentPage = 0;
+    let cardIndex = 0;
+
+    for (const member of selectedMembersData) {
+      if (cardIndex % cardsPerPage === 0 && cardIndex > 0) {
+        pdf.addPage();
+        currentPage++;
+      }
+      
+      const row = Math.floor((cardIndex % cardsPerPage) / cardsPerRow);
+      const col = (cardIndex % cardsPerPage) % cardsPerRow;
+      
+      const x = margin + (col * (cardWidth + margin));
+      const y = margin + (row * (cardHeight + margin));
+      
+      // Draw card background
+      pdf.setFillColor(30, 30, 30);
+      pdf.rect(x, y, cardWidth, cardHeight, 'F');
+      
+      // Add gym name and logo area
+      pdf.setTextColor(255, 255, 255);
+      pdf.setFontSize(10);
+      pdf.text(currentGym?.name || 'GYM NAME', x + 5, y + 8);
+      
+      // Add member name
+      pdf.setFontSize(8);
+      pdf.text(member.name.toUpperCase(), x + 5, y + 15);
+      
+      // Add "MEMBERSHIP CARD" text
+      pdf.setFontSize(6);
+      pdf.text('MEMBERSHIP CARD', x + 5, y + 20);
+      
+      // Add separator line
+      pdf.setDrawColor(100, 100, 100);
+      pdf.line(x + 5, y + 22, x + cardWidth - 5, y + 22);
+      
+      // Add "SINCE" date
+      const joinDate = new Date(member.startDate);
+      const sinceText = `SINCE ${(joinDate.getMonth() + 1).toString().padStart(2, '0')}/${joinDate.getFullYear()}`;
+      pdf.text(sinceText, x + 5, y + 28);
+      
+      // Add barcode area (simulated)
+      pdf.setFillColor(50, 50, 50);
+      pdf.rect(x + 5, y + 32, cardWidth - 10, 12, 'F');
+      pdf.setTextColor(200, 200, 200);
+      pdf.setFontSize(6);
+      pdf.text(member.checkinCode, x + cardWidth / 2, y + 39, { align: 'center' });
+      
+      cardIndex++;
+    }
+
+    pdf.save(`member-cards-${new Date().toISOString().split('T')[0]}.pdf`);
+
     showToast({
       type: 'success',
-      title: 'Export Started',
-      message: `Exporting ${filteredAndSortedMembers.length} members as ${format.toUpperCase()}`
+      title: 'Member Cards Generated',
+      message: `${selectedMembersData.length} member cards exported as PDF`
+    });
+  };
+
+  // Generate single member card as image/PDF
+  const generateSingleMemberCard = async (member: MemberWithCheckIn) => {
+    const cardElement = document.getElementById(`member-card-${member.id}`);
+    if (!cardElement) return;
+
+    try {
+      const canvas = await html2canvas(cardElement, {
+        scale: 2,
+        backgroundColor: '#1a1a1a',
+        useCORS: true
+      });
+      
+      const imgData = canvas.toDataURL('image/png');
+      
+      // Create PDF
+      const pdf = new jsPDF('landscape', 'mm', [54, 85]); // Card size
+      pdf.addImage(imgData, 'PNG', 0, 0, 85, 54);
+      pdf.save(`member-card-${member.name.replace(/\s+/g, '-').toLowerCase()}.pdf`);
+      
+      showToast({
+        type: 'success',
+        title: 'Member Card Generated',
+        message: `Member card for ${member.name} downloaded`
+      });
+    } catch (error) {
+      showToast({
+        type: 'error',
+        title: 'Error',
+        message: 'Failed to generate member card'
+      });
+    }
+  };
+
+  const sendBulkMessage = () => {
+    showToast({
+      type: 'success',
+      title: 'Message Sent',
+      message: `Message sent to ${selectedMembers.length} members`
+    });
+    setBulkMessage('');
+    setShowMessageModal(false);
+  };
+
+  const updateBulkStatus = () => {
+    const statusVal: 'active' | 'inactive' | 'suspended' = selectedStatus;
+    const updatedMembers = members.map(member => 
+      selectedMembers.includes(member.id) 
+        ? { ...member, status: statusVal }
+        : member
+    );
+    setMembers(updatedMembers);
+    
+    selectedMembers.forEach(memberId => {
+      gymMemberStorage.update(currentGym!.id, memberId, { status: statusVal });
+    });
+
+    showToast({
+      type: 'success',
+      title: 'Status Updated',
+      message: `Status updated for ${selectedMembers.length} members`
+    });
+    setShowStatusModal(false);
+    setSelectedMembers([]);
+  };
+
+  const updateBulkRanking = () => {
+    const updatedMembers = members.map(member => 
+      selectedMembers.includes(member.id) 
+        ? { 
+            ...member, 
+            ranking: calculateRanking(member.attendanceCount || 0, member.performanceScore || 0),
+            lastRankUpdate: new Date().toISOString()
+          }
+        : member
+    );
+    setMembers(updatedMembers);
+    
+    selectedMembers.forEach(memberId => {
+      const member = members.find(m => m.id === memberId);
+      if (member) {
+        gymMemberStorage.update(currentGym!.id, memberId, { 
+          ranking: calculateRanking(member.attendanceCount || 0, member.performanceScore || 0),
+          lastRankUpdate: new Date().toISOString()
+        });
+      }
+    });
+
+    showToast({
+      type: 'success',
+      title: 'Ranking Updated',
+      message: `Ranking updated for ${selectedMembers.length} members`
+    });
+  };
+
+  // Enhanced export functionality
+  const handleExport = (format: 'csv' | 'pdf') => {
+    if (format === 'csv') {
+      exportToCSV(filteredAndSortedMembers);
+    } else {
+      exportToPDF();
+    }
+  };
+
+  const handleExportSelected = (format: 'csv' | 'pdf') => {
+    const selectedMembersData = members.filter(member => selectedMembers.includes(member.id));
+    if (format === 'csv') {
+      exportToCSV(selectedMembersData);
+    } else {
+      exportToPDF(selectedMembersData);
+    }
+  };
+
+  const exportToCSV = (data: MemberWithCheckIn[]) => {
+    const headers = ['Name', 'Email', 'Phone', 'Age', 'Ranking', 'Membership', 'Status', 'Last Visit', 'Billing Status'];
+    const csvContent = [
+      headers.join(','),
+      ...data.map(member => [
+        `"${member.name}"`,
+        `"${member.email}"`,
+        `"${(member as any).phone || ''}"`,
+        member.age,
+        `"${member.ranking}"`,
+        `"${member.membershipType}"`,
+        `"${member.status}"`,
+        `"${member.lastCheckin ? new Date(member.lastCheckin).toLocaleDateString() : 'Never'}"`,
+        `"${member.billingStatus}"`
+      ].join(','))
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `members-${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+    window.URL.revokeObjectURL(url);
+
+    showToast({
+      type: 'success',
+      title: 'CSV Exported',
+      message: `${data.length} members exported successfully`
+    });
+  };
+
+  const exportToPDF = (data?: MemberWithCheckIn[]) => {
+    const exportData = data || filteredAndSortedMembers;
+    const pdf = new jsPDF();
+    
+    pdf.text('Members List', 20, 20);
+    pdf.text(`Generated on: ${new Date().toLocaleDateString()}`, 20, 30);
+    pdf.text(`Total Members: ${exportData.length}`, 20, 40);
+    
+    let yPosition = 60;
+    exportData.forEach((member, index) => {
+      if (yPosition > 270) {
+        pdf.addPage();
+        yPosition = 20;
+      }
+      
+      pdf.text(`${index + 1}. ${member.name}`, 20, yPosition);
+      pdf.text(`   Email: ${member.email}`, 25, yPosition + 5);
+      pdf.text(`   Ranking: ${member.ranking}`, 25, yPosition + 10);
+      pdf.text(`   Status: ${member.status}`, 25, yPosition + 15);
+      yPosition += 25;
+    });
+
+    pdf.save(`members-${new Date().toISOString().split('T')[0]}.pdf`);
+
+    showToast({
+      type: 'success',
+      title: 'PDF Exported',
+      message: `${exportData.length} members exported successfully`
     });
   };
 
   const handlePrint = () => {
-    window.print();
+    const printContent = tableRef.current;
+    if (printContent) {
+      const originalContents = document.body.innerHTML;
+      const printContents = printContent.innerHTML;
+      
+      document.body.innerHTML = printContents;
+      window.print();
+      document.body.innerHTML = originalContents;
+      window.location.reload();
+    }
+
     showToast({
       type: 'success',
       title: 'Print Started',
@@ -204,8 +541,22 @@ export const Members: React.FC = () => {
     });
   };
 
+  const handleInvite = () => {
+    if (!inviteEmail) {
+      showToast({ type: 'error', title: 'Error', message: 'Please enter an email address' });
+      return;
+    }
+
+    showToast({
+      type: 'success',
+      title: 'Invitation Sent',
+      message: `Invitation sent to ${inviteEmail}`
+    });
+    setInviteEmail('');
+    setShowInviteModal(false);
+  };
+
   const handleMemberLogin = (member: MemberWithCheckIn) => {
-    // Store member login data
     localStorage.setItem('member_login', JSON.stringify({
       memberId: member.id,
       gymId: member.gymId,
@@ -219,8 +570,38 @@ export const Members: React.FC = () => {
       message: `Logging in ${member.name} to member portal`
     });
     
-    // Navigate to member portal
     navigate('/member-portal');
+  };
+
+  // Ranking system
+  const calculateRanking = (attendance: number, performance: number): string => {
+    const score = (attendance * 0.6) + (performance * 0.4);
+    
+    if (score >= 90) return 'Platinum';
+    if (score >= 75) return 'Gold';
+    if (score >= 60) return 'Silver';
+    if (score >= 30) return 'Bronze';
+    return 'New';
+  };
+
+  const getRankingIcon = (ranking: string) => {
+    switch (ranking) {
+      case 'Platinum': return <Crown className="h-4 w-4 text-purple-400" />;
+      case 'Gold': return <Trophy className="h-4 w-4 text-yellow-400" />;
+      case 'Silver': return <Award className="h-4 w-4 text-gray-300" />;
+      case 'Bronze': return <Star className="h-4 w-4 text-orange-400" />;
+      default: return <Target className="h-4 w-4 text-blue-400" />;
+    }
+  };
+
+  const getRankingColor = (ranking: string) => {
+    switch (ranking) {
+      case 'Platinum': return 'bg-purple-500/20 text-purple-400 border-purple-400/30';
+      case 'Gold': return 'bg-yellow-500/20 text-yellow-400 border-yellow-400/30';
+      case 'Silver': return 'bg-gray-500/20 text-gray-300 border-gray-300/30';
+      case 'Bronze': return 'bg-orange-500/20 text-orange-400 border-orange-400/30';
+      default: return 'bg-blue-500/20 text-blue-400 border-blue-400/30';
+    }
   };
 
   const getSortIcon = (field: SortField) => {
@@ -239,11 +620,11 @@ export const Members: React.FC = () => {
 
   if (!currentGym) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-2xl font-bold mb-4">No Gym Selected</h1>
-          <p className="text-muted-foreground mb-4">Please select a gym to view members.</p>
-          <Button asChild>
+          <h1 className="text-2xl font-bold text-white mb-4">No Gym Selected</h1>
+          <p className="text-white/70 mb-4">Please select a gym to view members.</p>
+          <Button asChild className="bg-primary hover:bg-primary/80">
             <Link to="/gyms">Select Gym</Link>
           </Button>
         </div>
@@ -252,43 +633,9 @@ export const Members: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Sidebar (persistent) */}
-      <div className="fixed left-0 top-0 h-full bg-sidebar border-r border-sidebar-border flex flex-col py-4 z-40 w-[85px] lg:w-[85px]">
-        <div className="flex items-center justify-center px-3 mb-8">
-          <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
-            <Users className="h-6 w-6 text-primary-foreground" />
-          </div>
-        </div>
-
-        <div className="flex flex-col space-y-1 px-2 flex-1">
-          {[
-            { icon: BarChart3, label: 'Dashboard', path: '/dashboard' },
-            { icon: Users, label: 'Members', path: '/members' },
-            { icon: CreditCard, label: 'Billing', path: currentGym ? `/gyms/${currentGym.id}/billing` : '/gyms' },
-            { icon: TrendingUp, label: 'Marketing', path: currentGym ? `/gyms/${currentGym.id}/marketing` : '/gyms' },
-            { icon: Globe, label: 'Website', path: currentGym ? `/gyms/${currentGym.id}/website` : '/gyms' },
-            { icon: FileText, label: 'Sales', path: currentGym ? `/gyms/${currentGym.id}/sales` : '/gyms' },
-            { icon: Dumbbell, label: 'Gym', path: currentGym ? `/gyms/${currentGym.id}/gym` : '/gyms' },
-            { icon: Settings, label: 'Settings', path: currentGym ? `/gyms/${currentGym.id}/settings` : '/gyms' },
-            { icon: Building2, label: 'Front Desk', path: currentGym ? `/gyms/${currentGym.id}/front-desk` : '/gyms' },
-            { icon: HelpCircle, label: 'Help', path: '/help' }
-          ].map((it, idx) => {
-            const Icon = it.icon as any;
-            return (
-              <Link to={it.path} key={idx} className="w-full">
-                <Button variant="ghost" className="w-full flex flex-col items-center justify-center text-sidebar-foreground h-16 px-1 group">
-                  <Icon className="h-5 w-5 mb-1" />
-                  <span className="text-xs text-sidebar-foreground/80">{it.label}</span>
-                </Button>
-              </Link>
-            );
-          })}
-        </div>
-      </div>
-
+    <LayoutWithSidebar>
       {/* Header */}
-      <div className="border-b border-white/20 bg-white/5 backdrop-blur-sm p-6 lg:ml-[85px]">
+      <div className="border-b border-white/20 bg-white/5 backdrop-blur-sm p-6 -mx-6 mt-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
             <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
@@ -303,7 +650,7 @@ export const Members: React.FC = () => {
       </div>
 
       {/* Navigation Tabs */}
-      <div className="border-b border-white/20 px-6">
+      <div className="border-b border-white/20 px-6 -mx-6">
         <div className="flex space-x-8">
           {['Members', 'Check-in', 'Attendance', 'Memberships', 'Rosters', 'Documents', 'Content', 'Growth', 'Settings'].map((tab) => (
             <button
@@ -321,7 +668,7 @@ export const Members: React.FC = () => {
       </div>
 
       {/* Main Content */}
-      <div className="lg:ml-[85px] p-6 space-y-6">
+      <div className="space-y-6 pt-6">
         {/* Toolbar */}
         <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
           <div className="flex items-center space-x-4 flex-1">
@@ -366,6 +713,7 @@ export const Members: React.FC = () => {
             <Button
               variant="outline"
               className="border-white/20 text-white hover:bg-white/10"
+              onClick={() => setShowInviteModal(true)}
             >
               INVITE
             </Button>
@@ -417,11 +765,11 @@ export const Members: React.FC = () => {
           </div>
         </div>
 
-        {/* Filters Panel */}
+        {/* Enhanced Filters Panel */}
         {showFilters && (
           <Card className="bg-white/10 border-white/20">
             <CardContent className="p-4">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
                 <div>
                   <Label className="text-white">Status</Label>
                   <Select value={statusFilter} onValueChange={setStatusFilter}>
@@ -429,10 +777,10 @@ export const Members: React.FC = () => {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all">All Status</SelectItem>
-                      <SelectItem value="active">Active</SelectItem>
-                      <SelectItem value="inactive">Inactive</SelectItem>
-                      <SelectItem value="suspended">Suspended</SelectItem>
+                      <SelectItem value="all">Active</SelectItem>
+                      <SelectItem value="active">Inactive</SelectItem>
+                      <SelectItem value="inactive">Suspended</SelectItem>
+                      {/* <SelectItem value="suspended">Suspended</SelectItem> */}
                     </SelectContent>
                   </Select>
                 </div>
@@ -444,10 +792,58 @@ export const Members: React.FC = () => {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all">All Memberships</SelectItem>
-                      <SelectItem value="Monthly">Monthly</SelectItem>
-                      <SelectItem value="Annual">Annual</SelectItem>
-                      <SelectItem value="No Active">No Active</SelectItem>
+      {/* Membership Type Options */}
+<SelectItem value="all">All Memberships</SelectItem>
+<SelectItem value="Monthly">Monthly</SelectItem>
+<SelectItem value="Annual">Annual</SelectItem>
+<SelectItem value="No Active">No Active</SelectItem>
+
+{/* Time Range Options */}
+<SelectItem value="2weeks">Last 2 Weeks</SelectItem>
+<SelectItem value="1month">Last 1 Month</SelectItem>
+<SelectItem value="2months">Last 2 Months</SelectItem>
+<SelectItem value="3months">Last 3 Months</SelectItem>
+<SelectItem value="4months">Last 4 Months</SelectItem>
+<SelectItem value="5months">Last 5 Months</SelectItem>
+<SelectItem value="6months">Last 6 Months</SelectItem>
+<SelectItem value="7months">Last 7 Months</SelectItem>
+<SelectItem value="8months">Last 8 Months</SelectItem>
+<SelectItem value="9months">Last 9 Months</SelectItem>
+<SelectItem value="10months">Last 10 Months</SelectItem>
+<SelectItem value="11months">Last 11 Months</SelectItem>
+<SelectItem value="12months">Last 12 Months</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div>
+                  <Label className="text-white">Account Type</Label>
+                  <Select value={accountTypeFilter} onValueChange={setAccountTypeFilter}>
+                    <SelectTrigger className="bg-white/10 border-white/20 text-white">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Types</SelectItem>
+                      <SelectItem value="member">Member</SelectItem>
+                      <SelectItem value="visitor">Visitor</SelectItem>
+                      <SelectItem value="family">Family</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <Label className="text-white">Ranking</Label>
+                  <Select value={rankingFilter} onValueChange={setRankingFilter}>
+                    <SelectTrigger className="bg-white/10 border-white/20 text-white">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Rankings</SelectItem>
+                      <SelectItem value="Platinum">Platinum</SelectItem>
+                      <SelectItem value="Gold">Gold</SelectItem>
+                      <SelectItem value="Silver">Silver</SelectItem>
+                      <SelectItem value="Bronze">Bronze</SelectItem>
+                      <SelectItem value="New">New</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -472,16 +868,24 @@ export const Members: React.FC = () => {
         )}
 
         {/* Members Table */}
-        <Card className="bg-white/10 border-white/20">
+        <Card className="bg-white/10 border-white/20" ref={tableRef}>
           <CardContent className="p-0">
             {/* Table Header */}
             <div className="flex items-center space-x-4 p-4 border-b border-white/20">
               <div className="flex items-center space-x-2">
-                <Badge variant="secondary" className="bg-primary text-primary-foreground" onClick={() => { setAccountTypeFilter('all'); setStatusFilter('all'); }}>
-                  Members {filteredAndSortedMembers.filter(m => (m as any).accountType !== 'visitor').length}
+                <Badge 
+                  variant="secondary" 
+                  className={`cursor-pointer ${accountTypeFilter === 'all' ? 'bg-primary text-primary-foreground' : 'bg-white/10 text-white'}`} 
+                  onClick={() => { setAccountTypeFilter('all'); setStatusFilter('all'); }}
+                >
+                  Members {filteredAndSortedMembers.filter(m => m.accountType !== 'visitor').length}
                 </Badge>
-                <Badge variant="secondary" className="bg-blue-500/20 text-blue-400" onClick={() => setAccountTypeFilter('visitor')}>
-                  Visitors {filteredAndSortedMembers.filter(m => (m as any).accountType === 'visitor').length}
+                <Badge 
+                  variant="secondary" 
+                  className={`cursor-pointer ${accountTypeFilter === 'visitor' ? 'bg-blue-500 text-white' : 'bg-blue-500/20 text-blue-400'}`} 
+                  onClick={() => setAccountTypeFilter('visitor')}
+                >
+                  Visitors {filteredAndSortedMembers.filter(m => m.accountType === 'visitor').length}
                 </Badge>
               </div>
               
@@ -492,37 +896,58 @@ export const Members: React.FC = () => {
                     <Button
                       size="sm"
                       className="bg-primary hover:bg-primary/80"
-                      onClick={() => setShowActions(!showActions)}
+                      onClick={() => setShowBulkActions(!showBulkActions)}
                     >
                       ACTIONS
                     </Button>
                     
-                    {showActions && (
+                    {showBulkActions && (
                       <div className="absolute top-full left-0 mt-2 w-48 bg-background border border-white/20 rounded-lg shadow-lg z-50">
                         <div className="p-2 space-y-1">
                           <Button
                             variant="ghost"
                             size="sm"
                             className="w-full justify-start text-white hover:bg-white/10"
-                            onClick={() => handleBulkAction('Change Status')}
+                            onClick={() => handleBulkAction('send_message')}
                           >
+                            <Mail className="h-4 w-4 mr-2" />
+                            Send Message
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="w-full justify-start text-white hover:bg-white/10"
+                            onClick={() => handleBulkAction('change_status')}
+                          >
+                            <UserCheck className="h-4 w-4 mr-2" />
                             Change Status
                           </Button>
                           <Button
                             variant="ghost"
                             size="sm"
                             className="w-full justify-start text-white hover:bg-white/10"
-                            onClick={() => handleBulkAction('Prepare Membership Cards')}
+                            onClick={() => handleBulkAction('update_ranking')}
                           >
-                            Prepare Membership Cards
+                            <Trophy className="h-4 w-4 mr-2" />
+                            Update Ranking
                           </Button>
                           <Button
                             variant="ghost"
                             size="sm"
                             className="w-full justify-start text-white hover:bg-white/10"
-                            onClick={() => handleBulkAction('Send Message')}
+                            onClick={() => handleBulkAction('generate_cards')}
                           >
-                            Send Message
+                            <IdCard className="h-4 w-4 mr-2" />
+                            Generate Cards
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="w-full justify-start text-white hover:bg-white/10"
+                            onClick={() => handleBulkAction('export_selected')}
+                          >
+                            <Download className="h-4 w-4 mr-2" />
+                            Export Selected
                           </Button>
                         </div>
                       </div>
@@ -562,7 +987,15 @@ export const Members: React.FC = () => {
                         {getSortIcon('age')}
                       </div>
                     </th>
-                    <th className="text-left p-4 text-white">RANK / LEVEL</th>
+                    <th 
+                      className="text-left p-4 text-white cursor-pointer hover:bg-white/5"
+                      onClick={() => handleSort('ranking')}
+                    >
+                      <div className="flex items-center space-x-1">
+                        <span>RANK / LEVEL</span>
+                        {getSortIcon('ranking')}
+                      </div>
+                    </th>
                     <th className="text-left p-4 text-white">MEMBERSHIP</th>
                     <th 
                       className="text-left p-4 text-white cursor-pointer hover:bg-white/5"
@@ -590,7 +1023,7 @@ export const Members: React.FC = () => {
                       <td className="p-4">
                         <div className="flex items-center space-x-3">
                           <Avatar className="h-10 w-10">
-                            <AvatarImage src={member.avatar} alt={member.name} />
+                            <AvatarImage src={member.profile} alt={member.name} />
                             <AvatarFallback className="bg-primary text-primary-foreground">
                               {member.name.charAt(0)}
                             </AvatarFallback>
@@ -599,14 +1032,31 @@ export const Members: React.FC = () => {
                             <div className="flex items-center space-x-2">
                               <span className={`w-2 h-2 rounded-full ${member.status === 'active' ? 'bg-green-400' : 'bg-red-500'}`} />
                               <p className="font-medium text-white">{member.name}</p>
+                              {member.ranking && (
+                                <div className="flex items-center space-x-1">
+                                  {getRankingIcon(member.ranking)}
+                                </div>
+                              )}
                             </div>
                             <p className="text-sm text-primary">{member.email}</p>
-                            <p className="text-xs text-white/70">{member.phone}</p>
+                            <p className="text-xs text-white/70">{(member as any).phone}</p>
                           </div>
                         </div>
                       </td>
                       <td className="p-4 text-white">{member.age}</td>
-                      <td className="p-4 text-white/70">No Ranking</td>
+                      <td className="p-4">
+                        <div className="flex items-center space-x-2">
+                          <Badge className={`${getRankingColor(member.ranking || 'New')} border`}>
+                            <div className="flex items-center space-x-1">
+                              {getRankingIcon(member.ranking || 'New')}
+                              <span>{member.ranking || 'New'}</span>
+                            </div>
+                          </Badge>
+                          {member.attendanceCount !== undefined && (
+                            <span className="text-xs text-white/70">({member.attendanceCount} visits)</span>
+                          )}
+                        </div>
+                      </td>
                       <td className="p-4">
                         <div className="text-white text-sm">
                           {member.membershipType}
@@ -620,7 +1070,7 @@ export const Members: React.FC = () => {
                           <Badge className={getBillingStatusColor(member.billingStatus)}>
                             {member.billingStatus}
                           </Badge>
-                          <div className="text-xs text-white/70">{(member as any).accountType || 'member'}</div>
+                          <div className="text-xs text-white/70">{member.accountType}</div>
                         </div>
                       </td>
                       <td className="p-4">
@@ -634,10 +1084,21 @@ export const Members: React.FC = () => {
                           </Button>
                           <Button
                             size="sm"
-                            variant="destructive"
+                            variant="secondary"
                             onClick={() => handleMemberLogin(member)}
                           >
                             <LogIn className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => {
+                              setSelectedMemberForCard(member);
+                              setShowMemberCardModal(member.id);
+                            }}
+                            className="border-white/20 text-white hover:bg-white/10"
+                          >
+                            <IdCard className="h-4 w-4" />
                           </Button>
                         </div>
                       </td>
@@ -711,6 +1172,118 @@ export const Members: React.FC = () => {
         </Card>
       </div>
 
+      {/* Invite Modal */}
+      {showInviteModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-background border border-white/20 rounded-lg max-w-md w-full">
+            <div className="p-6 border-b border-white/20">
+              <div className="flex items-center justify-between">
+                <h2 className="text-xl font-bold text-white">Invite Member</h2>
+                <Button variant="ghost" size="icon" onClick={() => setShowInviteModal(false)} className="text-white hover:bg-white/10">
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+            <div className="p-6 space-y-4">
+              <div>
+                <Label htmlFor="inviteEmail" className="text-white">Email Address</Label>
+                <Input
+                  id="inviteEmail"
+                  type="email"
+                  value={inviteEmail}
+                  onChange={(e) => setInviteEmail(e.target.value)}
+                  placeholder="Enter email address"
+                  className="bg-white/10 border-white/20 text-white"
+                />
+              </div>
+              <div className="flex justify-end space-x-2">
+                <Button variant="outline" onClick={() => setShowInviteModal(false)}>Cancel</Button>
+                <Button onClick={handleInvite} className="bg-primary">Send Invite</Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Bulk Message Modal */}
+      {showMessageModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-background border border-white/20 rounded-lg max-w-md w-full">
+            <div className="p-6 border-b border-white/20">
+              <div className="flex items-center justify-between">
+                <h2 className="text-xl font-bold text-white">Send Message</h2>
+                <Button variant="ghost" size="icon" onClick={() => setShowMessageModal(false)} className="text-white hover:bg-white/10">
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+            <div className="p-6 space-y-4">
+              <div>
+                <Label htmlFor="bulkMessage" className="text-white">Message</Label>
+                <Textarea
+                  id="bulkMessage"
+                  value={bulkMessage}
+                  onChange={(e) => setBulkMessage(e.target.value)}
+                  placeholder="Enter your message here..."
+                  className="bg-white/10 border-white/20 text-white min-h-[100px]"
+                />
+              </div>
+              <div className="flex justify-end space-x-2">
+                <Button variant="outline" onClick={() => setShowMessageModal(false)}>Cancel</Button>
+                <Button onClick={sendBulkMessage} className="bg-primary">Send to {selectedMembers.length} Members</Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Bulk Status Modal */}
+      {showStatusModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-background border border-white/20 rounded-lg max-w-md w-full">
+            <div className="p-6 border-b border-white/20">
+              <div className="flex items-center justify-between">
+                <h2 className="text-xl font-bold text-white">Change Status</h2>
+                <Button variant="ghost" size="icon" onClick={() => setShowStatusModal(false)} className="text-white hover:bg-white/10">
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+            <div className="p-6 space-y-4">
+              <div>
+                <Label htmlFor="statusSelect" className="text-white">New Status</Label>
+                <Select value={selectedStatus} onValueChange={(v) => setSelectedStatus(v as 'active' | 'inactive' | 'suspended')}>
+                  <SelectTrigger className="bg-white/10 border-white/20 text-white">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="active">Active</SelectItem>
+                    <SelectItem value="inactive">Inactive</SelectItem>
+                    <SelectItem value="suspended">Suspended</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex justify-end space-x-2">
+                <Button variant="outline" onClick={() => setShowStatusModal(false)}>Cancel</Button>
+                <Button onClick={updateBulkStatus} className="bg-primary">Update {selectedMembers.length} Members</Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Member Card Modal */}
+  {showMemberCardModal && selectedMemberForCard && (
+  <MemberCardModal
+    member={selectedMemberForCard}
+    gym={currentGym}
+    onClose={() => {
+      setShowMemberCardModal(null);
+      setSelectedMemberForCard(null);
+    }}
+    onDownload={() => generateSingleMemberCard(selectedMemberForCard)}
+  />
+)}
       {/* Edit Member Modal */}
       {showEditMember && (
         <EditMemberModal
@@ -722,7 +1295,6 @@ export const Members: React.FC = () => {
             // Handle deletion signal
             if ((memberData as any)._deleted && (memberData as any).id) {
               const idToDelete = (memberData as any).id as string;
-              // permission
               const assignment = user?.gymAssignments?.find(a => a.gymId === currentGym?.id);
               const canDelete = assignment?.permissions?.includes('edit_members') || user?.role === 'admin' || user?.role === 'owner';
               if (!canDelete) { showToast({ type: 'error', title: 'Permission denied', message: 'You do not have permission to delete members' }); return; }
@@ -733,7 +1305,12 @@ export const Members: React.FC = () => {
                 ...member,
                 checkinCode: (member as any).checkinCode || `${2000 + index}${member.id.slice(-2)}`,
                 age: Math.floor(Math.random() * 30) + 20,
-                billingStatus: ['paid', 'overdue', 'pending'][Math.floor(Math.random() * 3)] as 'paid' | 'overdue' | 'pending'
+                billingStatus: ['paid', 'overdue', 'pending'][Math.floor(Math.random() * 3)] as 'paid' | 'overdue' | 'pending',
+                accountType: (member as any).accountType || 'member',
+                ranking: (member as any).ranking || 'Bronze',
+                attendanceCount: (member as any).attendanceCount || Math.floor(Math.random() * 100),
+                performanceScore: (member as any).performanceScore || Math.floor(Math.random() * 100),
+                lastRankUpdate: (member as any).lastRankUpdate || new Date().toISOString()
               }));
               setMembers(membersWithCheckIn);
               showToast({ type: 'success', title: 'Deleted', message: 'Member removed' });
@@ -741,9 +1318,13 @@ export const Members: React.FC = () => {
               return;
             }
 
+            // Calculate ranking for new/existing member
+            const attendanceCount = memberData.attendanceCount || 0;
+            const performanceScore = memberData.performanceScore || 0;
+            const ranking = calculateRanking(attendanceCount, performanceScore);
+
             // Create or update
             if (showEditMember === 'new') {
-              // If family account, create multiple members and link them
               if (memberData.accountType === 'family' && Array.isArray(memberData.familyMembers) && memberData.familyMembers.length > 0) {
                 const createdIds: string[] = [];
                 memberData.familyMembers.forEach((fm: any, idx: number) => {
@@ -762,12 +1343,15 @@ export const Members: React.FC = () => {
                     amountStatus: memberData.amountStatus || 'paid',
                     accountType: 'family',
                     familyPrimaryId: undefined,
-                    password: memberData.password || ''
+                    password: memberData.password || '',
+                    ranking: idx === 0 ? ranking : 'New',
+                    attendanceCount: idx === 0 ? attendanceCount : 0,
+                    performanceScore: idx === 0 ? performanceScore : 0,
+                    lastRankUpdate: new Date().toISOString()
                   };
                   gymMemberStorage.add(currentGym.id, memberObj);
                   createdIds.push(id);
                 });
-                // update familyPrimaryId for others
                 if (createdIds.length > 0) {
                   const primary = createdIds[0];
                   createdIds.slice(1).forEach(cid => {
@@ -775,7 +1359,6 @@ export const Members: React.FC = () => {
                   });
                 }
               } else {
-                // single member or visitor
                 const id = `member-${currentGym.id}-${Date.now()}`;
                 const newMember: any = {
                   id,
@@ -790,22 +1373,15 @@ export const Members: React.FC = () => {
                   amountPaid: memberData.amountPaid || 0,
                   amountStatus: memberData.amountStatus || 'paid',
                   accountType: memberData.accountType || 'member',
-                  password: memberData.password || ''
+                  password: memberData.password || '',
+                  ranking: ranking,
+                  attendanceCount: attendanceCount,
+                  performanceScore: performanceScore,
+                  lastRankUpdate: new Date().toISOString()
                 };
                 gymMemberStorage.add(currentGym.id, newMember);
               }
-
-              // Refresh members list
-              const updatedMembers = gymMemberStorage.getAll(currentGym.id);
-              const membersWithCheckIn: MemberWithCheckIn[] = updatedMembers.map((member, index) => ({
-                ...member,
-                checkinCode: (member as any).checkinCode || `${2000 + index}${member.id.slice(-2)}`,
-                age: Math.floor(Math.random() * 30) + 20,
-                billingStatus: ['paid', 'overdue', 'pending'][Math.floor(Math.random() * 3)] as 'paid' | 'overdue' | 'pending'
-              }));
-              setMembers(membersWithCheckIn);
             } else {
-              // update existing member
               const idToUpdate = showEditMember;
               const updates: any = {
                 name: `${memberData.firstName} ${memberData.lastName}`.trim(),
@@ -815,23 +1391,35 @@ export const Members: React.FC = () => {
                 amountPaid: memberData.amountPaid || 0,
                 amountStatus: memberData.amountStatus || 'paid',
                 accountType: memberData.accountType || 'member',
-                status: memberData.accountStatus || 'active'
+                status: memberData.accountStatus || 'active',
+                ranking: ranking,
+                attendanceCount: attendanceCount,
+                performanceScore: performanceScore,
+                lastRankUpdate: new Date().toISOString()
               };
               if (memberData.checkinCode) updates.checkinCode = memberData.checkinCode;
               if (memberData.password) updates.password = memberData.password;
 
               gymMemberStorage.update(currentGym.id, idToUpdate as string, updates);
-
-              // Refresh members list
-              const updatedMembers = gymMemberStorage.getAll(currentGym.id);
-              const membersWithCheckIn: MemberWithCheckIn[] = updatedMembers.map((member, index) => ({
-                ...member,
-                checkinCode: (member as any).checkinCode || `${2000 + index}${member.id.slice(-2)}`,
-                age: Math.floor(Math.random() * 30) + 20,
-                billingStatus: ['paid', 'overdue', 'pending'][Math.floor(Math.random() * 3)] as 'paid' | 'overdue' | 'pending'
-              }));
-              setMembers(membersWithCheckIn);
             }
+
+            // Refresh members list
+            const updatedMembers = gymMemberStorage.getAll(currentGym.id);
+            const membersWithCheckIn: MemberWithCheckIn[] = updatedMembers.map((member, index) => {
+              const baseMember = member as any;
+              return {
+                ...member,
+                checkinCode: baseMember.checkinCode || `${2000 + index}${member.id.slice(-2)}`,
+                age: baseMember.age || Math.floor(Math.random() * 30) + 20,
+                billingStatus: baseMember.billingStatus || (['paid', 'overdue', 'pending'][Math.floor(Math.random() * 3)] as 'paid' | 'overdue' | 'pending'),
+                accountType: baseMember.accountType || 'member',
+                ranking: baseMember.ranking || 'Bronze',
+                attendanceCount: baseMember.attendanceCount || Math.floor(Math.random() * 100),
+                performanceScore: baseMember.performanceScore || Math.floor(Math.random() * 100),
+                lastRankUpdate: baseMember.lastRankUpdate || new Date().toISOString()
+              };
+            });
+            setMembers(membersWithCheckIn);
 
             showToast({
               type: 'success',
@@ -842,11 +1430,13 @@ export const Members: React.FC = () => {
           }}
         />
       )}
-    </div>
+    </LayoutWithSidebar>
   );
 };
 
-// Edit Member Modal Component
+
+
+// Enhanced Edit Member Modal with Ranking
 const EditMemberModal: React.FC<{
   memberId: string;
   onClose: () => void;
@@ -870,7 +1460,9 @@ const EditMemberModal: React.FC<{
     accountStatus: 'active',
     familyMembers: [],
     password: '',
-    passwordConfirm: ''
+    passwordConfirm: '',
+    attendanceCount: 0,
+    performanceScore: 0
   });
   const [codeError, setCodeError] = useState<string | null>(null);
 
@@ -878,27 +1470,29 @@ const EditMemberModal: React.FC<{
     if (memberId && memberId !== 'new' && currentGym) {
       const existing = gymMemberStorage.getById(currentGym.id, memberId);
       if (existing) {
+        const baseExisting = existing as any;
         setFormData({
           firstName: existing.name.split(' ')[0] || existing.name,
           lastName: existing.name.split(' ').slice(1).join(' ') || '',
           email: existing.email || '',
           phone: existing.phone || '',
-          dateOfBirth: (existing as any).dateOfBirth || '',
-          checkinCode: (existing as any).checkinCode || '',
-          membershipType: (existing as any).membershipType || '2_weeks',
-          amountPaid: (existing as any).amountPaid || 0,
-          amountStatus: (existing as any).amountStatus || 'paid',
-          accountType: (existing as any).accountType || 'member',
-          accountStatus: (existing as any).status || 'active',
-          familyMembers: (existing as any).familyMembers || [],
+          dateOfBirth: baseExisting.dateOfBirth || '',
+          checkinCode: baseExisting.checkinCode || '',
+          membershipType: baseExisting.membershipType || '2_weeks',
+          amountPaid: baseExisting.amountPaid || 0,
+          amountStatus: baseExisting.amountStatus || 'paid',
+          accountType: baseExisting.accountType || 'member',
+          accountStatus: baseExisting.status || 'active',
+          familyMembers: baseExisting.familyMembers || [],
           password: '',
-          passwordConfirm: ''
+          passwordConfirm: '',
+          attendanceCount: baseExisting.attendanceCount || 0,
+          performanceScore: baseExisting.performanceScore || 0
         });
       }
     }
   }, [memberId, currentGym]);
 
-  // realtime validation
   useEffect(() => {
     const code = formData.checkinCode || '';
     if (code === '') { setCodeError(null); return; }
@@ -908,9 +1502,29 @@ const EditMemberModal: React.FC<{
     setCodeError(null);
   }, [formData.checkinCode, gymId, memberId]);
 
+  const calculateRanking = (attendance: number, performance: number): string => {
+    const score = (attendance * 0.6) + (performance * 0.4);
+    if (score >= 90) return 'Platinum';
+    if (score >= 75) return 'Gold';
+    if (score >= 60) return 'Silver';
+    if (score >= 30) return 'Bronze';
+    return 'New';
+  };
+
+  const getRankingColor = (ranking: string) => {
+    switch (ranking) {
+      case 'Platinum': return 'text-purple-400';
+      case 'Gold': return 'text-yellow-400';
+      case 'Silver': return 'text-gray-300';
+      case 'Bronze': return 'text-orange-400';
+      default: return 'text-blue-400';
+    }
+  };
+
+  const currentRanking = calculateRanking(formData.attendanceCount, formData.performanceScore);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // permission check
     const assignment = user?.gymAssignments?.find(a => a.gymId === currentGym?.id);
     const canEdit = assignment?.permissions?.includes('edit_members') || user?.role === 'admin' || user?.role === 'owner';
     if (!canEdit) { showToast({ type: 'error', title: 'Permission denied', message: 'You do not have permission to modify members' }); return; }
@@ -993,6 +1607,45 @@ const EditMemberModal: React.FC<{
               </Select>
             </div>
 
+            {/* Ranking Section */}
+            <div>
+              <Label htmlFor="attendanceCount" className="text-white">Attendance Count</Label>
+              <Input 
+                id="attendanceCount" 
+                type="number" 
+                value={formData.attendanceCount} 
+                onChange={(e)=>setFormData({...formData, attendanceCount: Number(e.target.value)})} 
+                className="bg-white/10 border-white/20 text-white" 
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="performanceScore" className="text-white">Performance Score (0-100)</Label>
+              <Input 
+                id="performanceScore" 
+                type="number" 
+                min="0"
+                max="100"
+                value={formData.performanceScore} 
+                onChange={(e)=>setFormData({...formData, performanceScore: Number(e.target.value)})} 
+                className="bg-white/10 border-white/20 text-white" 
+              />
+            </div>
+
+            <div className="md:col-span-2">
+              <div className="bg-white/5 p-4 rounded-lg border border-white/20">
+                <Label className="text-white mb-2 block">Current Ranking</Label>
+                <div className="flex items-center space-x-2">
+                  <div className={`text-lg font-bold ${getRankingColor(currentRanking)}`}>
+                    {currentRanking}
+                  </div>
+                  <div className="text-sm text-white/70">
+                    (Based on {formData.attendanceCount} visits and {formData.performanceScore}% performance)
+                  </div>
+                </div>
+              </div>
+            </div>
+
             <div className="md:col-span-2">
               <Label className="text-white">Account Type</Label>
               <div className="flex items-center space-x-4 mt-2">
@@ -1044,7 +1697,6 @@ const EditMemberModal: React.FC<{
                 if (!canDelete) { showToast({ type: 'error', title: 'Permission denied', message: 'You do not have permission to delete members' }); return; }
                 const typed = prompt('Type DELETE to permanently remove this member from this gym');
                 if (typed !== 'DELETE') { showToast({ type: 'warning', title: 'Aborted', message: 'Deletion cancelled' }); return; }
-                // signal parent to delete
                 onSave({ _deleted: true, id: memberId });
                 onClose();
               }}>Delete</Button>

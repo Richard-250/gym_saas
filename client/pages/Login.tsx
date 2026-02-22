@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import { Button } from '@/components/ui/button';
@@ -19,6 +19,16 @@ export const Login: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [activeTab, setActiveTab] = useState('login');
+  const [passwordConfirm, setPasswordConfirm] = useState('');
+ const [passwordsMatch, setPasswordsMatch] = useState(false);
+
+// Add useEffect to check password match
+useEffect(() => {
+  const match = password === passwordConfirm && password.length > 0;
+  setPasswordsMatch(match);
+}, [password, passwordConfirm]);
+
+
 
   // Redirect if already logged in
   if (user && !isLoading) {
@@ -82,7 +92,12 @@ export const Login: React.FC = () => {
     e.preventDefault();
     setIsSubmitting(true);
     setError('');
-
+    
+    if (password !== passwordConfirm) {
+    setError("Passwords don't match");
+    setIsSubmitting(false);
+    return;
+  }
     try {
       const result = await register(name, email, password);
       if (result.success) {
@@ -184,73 +199,81 @@ export const Login: React.FC = () => {
                   Sign up and create your first gym
                 </CardDescription>
               </CardHeader>
-              <form onSubmit={handleRegister}>
-                <CardContent className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="reg-name" className="text-white">Full Name</Label>
-                    <Input
-                      id="reg-name"
-                      type="text"
-                      placeholder="Enter your full name"
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      className="bg-white/10 border-white/20 text-white placeholder:text-white/50"
-                      required
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="reg-email" className="text-white">Email</Label>
-                    <Input
-                      id="reg-email"
-                      type="email"
-                      placeholder="Enter your email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      className="bg-white/10 border-white/20 text-white placeholder:text-white/50"
-                      required
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="reg-password" className="text-white">Password</Label>
-                    <Input
-                      id="reg-password"
-                      type="password"
-                      placeholder="Create a password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      className="bg-white/10 border-white/20 text-white placeholder:text-white/50"
-                      required
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="gym-name" className="text-white">Gym Name</Label>
-                    <Input
-                      id="gym-name"
-                      type="text"
-                      placeholder="Enter your gym name"
-                      value={gymName}
-                      onChange={(e) => setGymName(e.target.value)}
-                      className="bg-white/10 border-white/20 text-white placeholder:text-white/50"
-                      required
-                    />
-                  </div>
-                  {error && (
-                    <div className="text-sm text-destructive bg-destructive/10 p-3 rounded-md border border-destructive/20">
-                      {error}
-                    </div>
-                  )}
-                </CardContent>
-                <CardFooter>
-                  <Button
-                    type="submit"
-                    className="w-full bg-primary hover:bg-primary/80"
-                    disabled={isSubmitting}
-                  >
-                    {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                    Create Account
-                  </Button>
-                </CardFooter>
-              </form>
+      
+
+<form onSubmit={handleRegister}>
+  <CardContent className="space-y-4">
+    <div className="space-y-2">
+      <Label htmlFor="reg-name" className="text-white">Full Name</Label>
+      <Input
+        id="reg-name"
+        type="text"
+        placeholder="Enter your full name"
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+        className="bg-white/10 border-white/20 text-white placeholder:text-white/50"
+        required
+      />
+    </div>
+    <div className="space-y-2">
+      <Label htmlFor="reg-email" className="text-white">Email</Label>
+      <Input
+        id="reg-email"
+        type="email"
+        placeholder="Enter your email"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        className="bg-white/10 border-white/20 text-white placeholder:text-white/50"
+        required
+      />
+    </div>
+    <div className="space-y-2">
+      <Label htmlFor="reg-password" className="text-white">Password</Label>
+      <Input
+        id="reg-password"
+        type="password"
+        placeholder="Create a password"
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
+        className="bg-white/10 border-white/20 text-white placeholder:text-white/50"
+        required
+      />
+    </div>
+    <div className="space-y-2">
+      <Label htmlFor="reg-password-confirm" className="text-white">Confirm Password</Label>
+      <Input
+        id="reg-password-confirm"
+        type="password"
+        placeholder="Confirm your password"
+        value={passwordConfirm}
+        onChange={(e) => setPasswordConfirm(e.target.value)}
+        className={`bg-white/10 border-white/20 text-white placeholder:text-white/50 ${
+          passwordConfirm && password !== passwordConfirm ? 'border-red-500' : ''
+        }`}
+        required
+      />
+      {passwordConfirm && password !== passwordConfirm && (
+        <p className="text-sm text-red-400">Passwords do not match</p>
+      )}
+    </div>
+
+    {error && (
+      <div className="text-sm text-destructive bg-destructive/10 p-3 rounded-md border border-destructive/20">
+        {error}
+      </div>
+    )}
+  </CardContent>
+  <CardFooter>
+    <Button
+      type="submit"
+      className="w-full bg-primary hover:bg-primary/80"
+      disabled={isSubmitting || !passwordsMatch}
+    >
+      {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+      Create Account
+    </Button>
+  </CardFooter>
+</form>
             </TabsContent>
           </Tabs>
         </Card>

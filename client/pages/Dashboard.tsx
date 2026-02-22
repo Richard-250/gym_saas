@@ -1,45 +1,33 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Progress } from '@/components/ui/progress';
 import { Input } from '@/components/ui/input';
+import { LayoutWithSidebar } from '@/components/ui/LayoutWithSidebar';
 import {
   Dumbbell,
-  Heart,
   Calendar,
   Bell,
-  Settings,
   Users,
   DollarSign,
   Activity,
   Zap,
   TrendingUp,
   TrendingDown,
-  Clock,
   CheckCircle,
   AlertCircle,
-  XCircle,
-  Plus,
   X,
   CreditCard,
   FileText,
   UserPlus,
   LogIn,
-  Menu,
   Monitor,
-  MessageCircle,
   Sparkles,
   Search,
   BarChart3,
-  CreditCard as BillingIcon,
-  Globe,
-  TrendingUp as MarketingIcon,
-  HelpCircle,
-  User,
-  Building2
 } from 'lucide-react';
 import { generateSampleDashboardStats } from '@/lib/sample-data';
 import { gymMemberStorage, gymTaskStorage, gymPaymentStorage, gymNotificationStorage, initializeGymData } from '@/lib/gym-storage';
@@ -50,12 +38,9 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Toolti
 export const Dashboard: React.FC = () => {
   const { user, currentGym, logout, setCurrentGym, userGyms } = useAuth();
   const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showWhatsNew, setShowWhatsNew] = useState(false);
-  const [showChatbot, setShowChatbot] = useState(false);
   const [showAccountMenu, setShowAccountMenu] = useState(false);
 
-  // Close account menu when clicking outside
   useEffect(() => {
     const handleClickOutside = () => setShowAccountMenu(false);
     if (showAccountMenu) {
@@ -86,19 +71,6 @@ export const Dashboard: React.FC = () => {
     }
   }, [currentGym]);
 
-  const navigationItems = [
-    { icon: BarChart3, label: 'Dashboard', active: true },
-    { icon: Users, label: 'Members', active: false },
-    { icon: BillingIcon, label: 'Billing', active: false },
-    { icon: MarketingIcon, label: 'Marketing', active: false },
-    { icon: Globe, label: 'Website', active: false },
-    { icon: FileText, label: 'Sales', active: false },
-    { icon: Dumbbell, label: 'Gym', active: false },
-    { icon: Settings, label: 'Settings', active: false },
-    { icon: Building2, label: 'Front Desk', active: false },
-    { icon: HelpCircle, label: 'Help', active: false },
-  ];
-
   const dismissNotification = (notificationId: string) => {
     if (currentGym) {
       gymNotificationStorage.markAsRead(currentGym.id, notificationId);
@@ -117,7 +89,7 @@ export const Dashboard: React.FC = () => {
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
       return (
-        <div className="bg-[#85EC68] text-[#01363C] p-2 px-3 border border-white/20 rounded shadow-lg">
+         <div className="text-[#85EC68] p-1 pl-2 pr-2 border border-white/20 rounded shadow-lg">
           <p className="font-medium">{`${label}: ${payload[0].value}`}</p>
         </div>
       );
@@ -127,11 +99,11 @@ export const Dashboard: React.FC = () => {
 
   if (!currentGym) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-2xl font-bold mb-4">No Gym Selected</h1>
-          <p className="text-muted-foreground mb-4">Please select a gym to view the dashboard.</p>
-          <Button asChild>
+          <h1 className="text-2xl font-bold text-white mb-4">No Gym Selected</h1>
+          <p className="text-white/70 mb-4">Please select a gym to view the dashboard.</p>
+          <Button asChild className="bg-primary hover:bg-primary/80">
             <Link to="/gyms">Select Gym</Link>
           </Button>
         </div>
@@ -139,108 +111,12 @@ export const Dashboard: React.FC = () => {
     );
   }
 
+  const overduePayments = payments.filter(p => p.status === 'overdue');
+
   return (
-    <div className="min-h-screen bg-background">
-      {/* Mobile Menu Button */}
-      <div className="lg:hidden fixed top-4 left-4 z-50">
-        <Button 
-          variant="ghost" 
-          size="icon" 
-          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-          className="text-foreground hover:bg-white/10"
-        >
-          <Menu className="h-6 w-6 text-yellow-400" />
-        </Button>
-      </div>
-
-      {/* Sidebar */}
-      <div className="fixed left-0 top-0 h-full bg-sidebar border-r border-sidebar-border flex flex-col py-4 z-40 w-[85px] lg:w-[85px]">
-        {/* Logo */}
-        <div className="flex items-center justify-center px-3 mb-8">
-          <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
-            <Heart className="h-6 w-6 text-primary-foreground" />
-          </div>
-        </div>
-        
-        {/* Navigation Items */}
-        <div className={`flex flex-col space-y-1 px-2 flex-1 ${isMobileMenuOpen ? 'overflow-y-auto' : ''}`}>
-          {navigationItems.map((item, index) => {
-            const Icon = item.icon;
-
-            if (item.label === 'Members') {
-              return (
-                <Link to="/members" key={index} className="w-full">
-                  <Button
-                    variant="ghost"
-                    className={`w-full flex flex-col items-center justify-center text-sidebar-foreground hover:bg-sidebar-accent h-16 px-1 group ${
-                      item.active ? 'bg-sidebar-accent' : ''
-                    } ${isMobileMenuOpen ? 'h-12 flex-row justify-start px-3' : ''}`}
-                  >
-                    <Icon className={`h-5 w-5 ${isMobileMenuOpen ? 'mr-3 text-yellow-400' : 'mb-1'} ${!isMobileMenuOpen && item.active ? 'text-primary' : ''}`} />
-                    <span className={`text-xs ${isMobileMenuOpen ? 'text-sm text-yellow-400' : 'text-sidebar-foreground/80'} group-hover:text-sidebar-foreground`}>{item.label}</span>
-                  </Button>
-                </Link>
-              );
-            }
-
-            // Determine route for this item
-            const getPath = () => {
-              const label = item.label.toLowerCase();
-              if (label === 'dashboard') return '/dashboard';
-              if (label === 'members') return '/members';
-              if (label === 'gym') return currentGym ? `/gyms/${currentGym.id}/staff` : '/gyms';
-              if (label === 'billing') return currentGym ? `/gyms/${currentGym.id}/billing` : '/gyms';
-              if (label === 'marketing') return currentGym ? `/gyms/${currentGym.id}/marketing` : '/gyms';
-              if (label === 'website') return currentGym ? `/gyms/${currentGym.id}/website` : '/gyms';
-              if (label === 'sales') return currentGym ? `/gyms/${currentGym.id}/sales` : '/gyms';
-              if (label === 'settings') return currentGym ? `/gyms/${currentGym.id}/settings` : '/gyms';
-              if (label === 'front desk') return currentGym ? `/gyms/${currentGym.id}/front-desk` : '/gyms';
-              if (label === 'help') return '/help';
-              return '/gyms';
-            };
-
-            const path = getPath();
-
-            return (
-              <Link to={path} key={index} className="w-full">
-                <Button
-                  variant="ghost"
-                  className={`w-full flex flex-col items-center justify-center text-sidebar-foreground hover:bg-sidebar-accent h-16 px-1 group ${
-                    item.active ? 'bg-sidebar-accent' : ''
-                  } ${isMobileMenuOpen ? 'h-12 flex-row justify-start px-3' : ''}`}
-                >
-                  <Icon className={`h-5 w-5 ${isMobileMenuOpen ? 'mr-3 text-yellow-400' : 'mb-1'} ${!isMobileMenuOpen && item.active ? 'text-primary' : ''}`} />
-                  <span className={`text-xs ${isMobileMenuOpen ? 'text-sm text-yellow-400' : 'text-sidebar-foreground/80'} group-hover:text-sidebar-foreground`}>{item.label}</span>
-                </Button>
-              </Link>
-            );
-          })}
-        </div>
-        
-        {/* Account Button - only show on mobile menu */}
-        {isMobileMenuOpen && (
-          <div className="px-2 mt-auto">
-            <Button
-              variant="ghost"
-              className="w-full h-12 flex-row justify-start px-3 text-sidebar-foreground hover:bg-sidebar-accent"
-            >
-              <User className="h-5 w-5 mr-3 text-yellow-400" />
-              <span className="text-sm text-yellow-400">Account</span>
-            </Button>
-          </div>
-        )}
-      </div>
-
-      {/* Overlay for mobile */}
-      {isMobileMenuOpen && (
-        <div 
-          className="lg:hidden fixed inset-0 bg-black/50 z-30" 
-          onClick={() => setIsMobileMenuOpen(false)}
-        />
-      )}
-
+    <LayoutWithSidebar>
       {/* Main Content */}
-      <div className="lg:ml-[85px] p-6 text-foreground">
+      <div>
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           {/* What's New Button */}
@@ -258,13 +134,12 @@ export const Dashboard: React.FC = () => {
 
           <div>
             <div className="flex items-center space-x-2 mb-2">
+              <BarChart3 className="h-6 w-6 text-lime-500" />
               <h1 className="text-2xl font-bold text-white">Dashboard</h1>
-              <Badge variant="outline" className="text-warning border-warning bg-warning/10">
-                {currentGym.subscription.planType}
-              </Badge>
+           
             </div>
-            <p className="text-lg text-white">{currentGym.name}</p>
-            <p className="text-sm text-white/70">payments this month</p>
+            <p className="text-lg font-bold text-white">{currentGym.name}</p>
+            <p className="text-sm text-white/70">Overview & key metrics</p>
           </div>
           <div className="flex items-center space-x-4">
             {/* Account dropdown - moved to top right */}
@@ -275,7 +150,7 @@ export const Dashboard: React.FC = () => {
                 onClick={() => setShowAccountMenu(!showAccountMenu)}
               >
                 <Avatar className="h-8 w-8">
-                  <AvatarImage src={user?.avatar} alt={user?.name} />
+                  <AvatarImage src={user?.profile} alt={user?.name} />
                   <AvatarFallback className="bg-primary text-primary-foreground">{user?.name?.charAt(0)}</AvatarFallback>
                 </Avatar>
                 <span className="text-sm hidden sm:block">{user?.name}</span>
@@ -452,26 +327,28 @@ export const Dashboard: React.FC = () => {
               </CardHeader>
               <CardContent>
                 <ResponsiveContainer width="100%" height={200}>
-                  <BarChart data={stats.attendanceData} style={{ cursor: 'pointer' }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" vertical={false} />
-                    <XAxis 
-                      dataKey="day" 
-                      axisLine={false}
-                      tickLine={false}
-                      tick={{ fill: 'rgba(255,255,255,0.7)', fontSize: 12 }}
-                    />
-                    <YAxis 
-                      axisLine={false}
-                      tickLine={false}
-                      tick={{ fill: 'rgba(255,255,255,0.7)', fontSize: 12 }}
-                    />
-                    <Tooltip content={<CustomTooltip />} />
-                    <Bar 
-                      dataKey="count" 
-                      fill="rgba(255,255,255,0.2)" 
-                      radius={[4, 4, 0, 0]}
-                    />
-                  </BarChart>
+<BarChart data={stats.attendanceData} style={{ cursor: 'pointer' }}>
+  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" vertical={false} />
+  <XAxis 
+    dataKey="day" 
+    stroke="hsl(var(--muted-foreground))"
+    fontSize={12}
+  />
+  <YAxis 
+    axisLine={false}
+    tickLine={false}
+    tick={{ fill: 'rgba(255,255,255,0.7)', fontSize: 12 }}
+  />
+  <Tooltip content={<CustomTooltip />} cursor={false} />
+  <Bar 
+    dataKey="count" 
+    radius={[6, 6, 0, 0]} 
+    fill="rgb(255 255 255 / 25%)"
+    className="hover:fill-white/10 cursor-pointer transition-all duration-200"
+    activeBar={false}
+    isAnimationActive={false}
+  />
+</BarChart>
                 </ResponsiveContainer>
               </CardContent>
             </Card>
@@ -530,62 +407,34 @@ export const Dashboard: React.FC = () => {
               </CardContent>
             </Card>
 
-            {/* My Bookings */}
+            {/* My Bookings / Today */}
             <Card className="bg-white/10 border-white/20">
               <CardHeader>
                 <CardTitle className="flex items-center space-x-2 text-white">
                   <Calendar className="h-5 w-5" />
-                  <span>My Bookings</span>
+                  <span>Today</span>
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  <div className="text-sm">
-                    <p className="font-medium text-white">1:30PM</p>
-                    <p className="text-white/70">JL 1/1</p>
-                  </div>
-                  
                   <div>
-                    <h4 className="font-medium mb-2 text-white">Schedule Today</h4>
-                    <div className="bg-white/10 p-3 rounded-lg">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-2">
-                          <CheckCircle className="h-4 w-4 text-primary" />
-                          <span className="text-sm text-white">6:00PM</span>
-                        </div>
-                        <Badge className="bg-primary text-primary-foreground">CHECK-IN</Badge>
-                      </div>
-                      <p className="text-sm text-white/70 mt-1">Senior Ciri-on<br />Tony second</p>
-                    </div>
-                  </div>
-                  
-                  <div>
-                    <h4 className="font-medium mb-2 text-white">Upcoming</h4>
+                    <h4 className="font-medium mb-2 text-white">Quick actions</h4>
                     <div className="space-y-2">
-                      <div className="text-sm">
-                        <p className="font-medium text-white">7:00PM Starting</p>
-                        <p className="text-white/70">Senior Sensi</p>
-                      </div>
-                      <div className="text-sm">
-                        <p className="font-medium text-white">9:00PM Judo - AUL move</p>
-                        <p className="text-white/70">VH 1</p>
-                      </div>
+                      <Button variant="outline" className="w-full justify-start border-white/20 text-white hover:bg-white/10" asChild>
+                        <Link to="/members">
+                          <UserPlus className="h-4 w-4 mr-2" />
+                          Add member
+                        </Link>
+                      </Button>
+                      <Button variant="outline" className="w-full justify-start border-white/20 text-white hover:bg-white/10" asChild>
+                        <Link to="/front-desk">
+                          <LogIn className="h-4 w-4 mr-2" />
+                          Check-in
+                        </Link>
+                      </Button>
                     </div>
                   </div>
-                  
-                  <div className="pt-2">
-                    <p className="text-sm font-medium text-white">Total Sessions Today: 4</p>
-                    <div className="flex items-center space-x-4 text-xs mt-1">
-                      <span className="flex items-center space-x-1">
-                        <div className="w-2 h-2 bg-primary rounded-full" />
-                        <span>In Progress</span>
-                      </span>
-                      <span className="flex items-center space-x-1">
-                        <div className="w-2 h-2 bg-muted-foreground rounded-full" />
-                        <span>Upcoming</span>
-                      </span>
-                    </div>
-                  </div>
+                  <p className="text-xs text-white/70">View full schedule in Front Desk.</p>
                 </div>
               </CardContent>
             </Card>
@@ -634,24 +483,35 @@ export const Dashboard: React.FC = () => {
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  {payments.map((payment) => (
-                    <div key={payment.id} className="flex items-center space-x-3 p-3 bg-destructive/10 border border-destructive/20 rounded-lg">
-                      <Avatar className="h-8 w-8">
-                        <AvatarFallback className="bg-primary text-primary-foreground">CR</AvatarFallback>
-                      </Avatar>
-                      <div className="flex-1">
-                        <p className="text-sm font-medium text-white">CYRUANIRO Richard</p>
-                        <p className="text-xs text-white/70">{payment.description}</p>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-sm font-bold text-destructive">${payment.amount}</p>
-                        <p className="text-xs text-destructive">13/04/2025</p>
-                      </div>
-                      <Button variant="outline" size="icon" className="h-6 w-6 border-white/20 hover:bg-white/10">
-                        <FileText className="h-3 w-3 text-white" />
-                      </Button>
-                    </div>
-                  ))}
+                  {overduePayments.length === 0 ? (
+                    <p className="text-white/70 text-center py-4">No overdue payments</p>
+                  ) : (
+                    overduePayments.map((payment) => {
+                      const member = members.find(m => m.id === payment.memberId);
+                      const displayName = member?.name ?? 'Member';
+                      const initials = displayName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+                      return (
+                        <div key={payment.id} className="flex items-center space-x-3 p-3 bg-destructive/10 border border-destructive/20 rounded-lg">
+                          <Avatar className="h-8 w-8">
+                            <AvatarFallback className="bg-primary text-primary-foreground">{initials}</AvatarFallback>
+                          </Avatar>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium text-white truncate">{displayName}</p>
+                            <p className="text-xs text-white/70 truncate">{payment.description}</p>
+                          </div>
+                          <div className="text-right shrink-0">
+                            <p className="text-sm font-bold text-destructive">${payment.amount}</p>
+                            <p className="text-xs text-destructive">{payment.dueDate ? new Date(payment.dueDate).toLocaleDateString() : '—'}</p>
+                          </div>
+                          <Button variant="outline" size="icon" className="h-6 w-6 border-white/20 hover:bg-white/10" asChild>
+                            <Link to="/billing">
+                              <FileText className="h-3 w-3 text-white" />
+                            </Link>
+                          </Button>
+                        </div>
+                      );
+                    })
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -689,26 +549,10 @@ export const Dashboard: React.FC = () => {
         </div>
       </div>
 
-      {/* Chatbot Icon */}
-      <div className="fixed bottom-6 right-6 z-50">
-        <Button 
-          className="w-14 h-14 rounded-full bg-primary hover:bg-primary/80 shadow-lg"
-          onClick={() => setShowChatbot(true)}
-        >
-          <MessageCircle className="h-6 w-6" />
-        </Button>
-      </div>
-
-      {/* What's New Modal */}
       {showWhatsNew && (
         <WhatsNewModal onClose={() => setShowWhatsNew(false)} />
       )}
-
-      {/* Chatbot Modal */}
-      {showChatbot && (
-        <ChatbotModal onClose={() => setShowChatbot(false)} />
-      )}
-    </div>
+    </LayoutWithSidebar>
   );
 };
 
@@ -821,92 +665,7 @@ const WhatsNewModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
         </div>
       </div>
     </div>
-  );
+
+  ); 
 };
 
-// Chatbot Modal Component
-const ChatbotModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
-  const [messages, setMessages] = useState([
-    {
-      id: 1,
-      content: "Hi! I'm your gym management assistant. How can I help you today?",
-      isBot: true,
-      timestamp: new Date()
-    }
-  ]);
-  const [inputMessage, setInputMessage] = useState('');
-
-  const handleSendMessage = () => {
-    if (!inputMessage.trim()) return;
-
-    const userMessage = {
-      id: messages.length + 1,
-      content: inputMessage,
-      isBot: false,
-      timestamp: new Date()
-    };
-
-    setMessages(prev => [...prev, userMessage]);
-    setInputMessage('');
-
-    // Simulate bot response
-    setTimeout(() => {
-      const botResponse = {
-        id: messages.length + 2,
-        content: "I understand you need help with that. Let me assist you with your gym management needs. You can ask me about member management, billing, reports, or any other features.",
-        isBot: true,
-        timestamp: new Date()
-      };
-      setMessages(prev => [...prev, botResponse]);
-    }, 1000);
-  };
-
-  return (
-    <div className="fixed inset-0 bg-black/50 flex items-end justify-end z-50 p-4">
-      <div className="bg-background border border-white/20 rounded-lg w-96 h-[500px] flex flex-col">
-        <div className="p-4 border-b border-white/20 flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <MessageCircle className="h-5 w-5 text-primary" />
-            <h3 className="font-semibold text-white">Digital Assistant</h3>
-          </div>
-          <Button variant="ghost" size="icon" onClick={onClose} className="text-white hover:bg-white/10">
-            <X className="h-4 w-4" />
-          </Button>
-        </div>
-        
-        <div className="flex-1 overflow-y-auto p-4 space-y-4">
-          {messages.map((message) => (
-            <div key={message.id} className={`flex ${message.isBot ? 'justify-start' : 'justify-end'}`}>
-              <div className={`max-w-[80%] p-3 rounded-lg ${
-                message.isBot 
-                  ? 'bg-white/10 text-white' 
-                  : 'bg-primary text-primary-foreground'
-              }`}>
-                <p className="text-sm">{message.content}</p>
-                <p className="text-xs opacity-70 mt-1">
-                  {message.timestamp.toLocaleTimeString()}
-                </p>
-              </div>
-            </div>
-          ))}
-        </div>
-        
-        <div className="p-4 border-t border-white/20">
-          <div className="flex space-x-2">
-            <Input
-              placeholder="Type your message..."
-              value={inputMessage}
-              onChange={(e) => setInputMessage(e.target.value)}
-              onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
-              className="bg-white/10 border-white/20 text-white placeholder:text-white/50"
-            />
-            <Button onClick={handleSendMessage} className="bg-primary hover:bg-primary/80">
-              <span className="sr-only">Send</span>
-              →
-            </Button>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
